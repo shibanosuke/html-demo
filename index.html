@@ -72,19 +72,6 @@
         .current-location-pulse {
             animation: pulse-arrow 1.8s infinite ease-in-out;
         }
-        /* 現在地インジケータ：縦線の真上（left:12px中央）に三角を重ねる */
-        .station-row.is-current::after {
-            content: "";
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translate(-50%, -50%) rotate(135deg);
-            width: 0; height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 9px solid #2563eb;
-            z-index: 20;
-        }
     </style>
 </head>
 <body class="w-full h-[100dvh] bg-appDark text-slate-100 flex flex-col justify-between overflow-hidden">
@@ -269,7 +256,9 @@
 
         <!-- 4. 停車駅タイムライン -->
         <div class="flex-grow flex flex-col min-h-0">
-
+            <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 px-0.5 flex items-center gap-1.5 shrink-0">
+                <i class="fa-solid fa-list-ul text-railBlue"></i> 停車駅・到着予想
+            </h3>
             
             <!-- タイムラインコンテナ -->
             <div class="flex-grow overflow-y-auto pr-1 relative no-scrollbar" id="station-timeline-container">
@@ -279,7 +268,7 @@
                     <div class="absolute left-[12px] top-0 bottom-0 w-[2px] bg-slate-800 z-0"></div>
 
                     <!-- 21駅リストコンテナ -->
-                    <div id="timeline-stations" class="space-y-1"></div>
+                    <div id="timeline-stations" class="space-y-4"></div>
 
                 </div>
             </div>
@@ -317,181 +306,76 @@
         // 💡 【超・超精密：全線トレース軌道データ】
         // 主要区間のカーブ、合流、トンネル、鉄橋のカーブ曲率を地図の実軌道と完全に合致させ、かつキロ程の連続性を極限まで高めた高解像度ポリライン（計168点）
         var trackPoints = [
-            // ── 東京〜品川 ──
-            { lat: 35.6811, lng: 139.7671, km: 0.0 },
-            { lat: 35.6787, lng: 139.7656, km: 0.4 },
-            { lat: 35.6765, lng: 139.7635, km: 0.8 },
-            { lat: 35.6738, lng: 139.7615, km: 1.1 },
-            { lat: 35.6710, lng: 139.7595, km: 1.4 },
-            { lat: 35.6690, lng: 139.7590, km: 1.6 },
-            { lat: 35.6664, lng: 139.7583, km: 1.9 },
-            { lat: 35.6638, lng: 139.7578, km: 2.2 },
-            { lat: 35.6595, lng: 139.7572, km: 2.7 },
-            { lat: 35.6565, lng: 139.7560, km: 3.0 },
-            { lat: 35.6530, lng: 139.7538, km: 3.5 },
-            { lat: 35.6500, lng: 139.7515, km: 3.9 },
-            { lat: 35.6455, lng: 139.7475, km: 4.6 },
-            { lat: 35.6420, lng: 139.7452, km: 5.1 },
-            { lat: 35.6375, lng: 139.7425, km: 5.7 },
-            { lat: 35.6340, lng: 139.7415, km: 6.1 },
-            { lat: 35.6301, lng: 139.7404, km: 6.8 },
-            // ── 品川〜川崎 ──
-            { lat: 35.6235, lng: 139.7385, km: 7.5 },
-            { lat: 35.6150, lng: 139.7355, km: 8.5 },
-            { lat: 35.6105, lng: 139.7340, km: 9.0 },
-            { lat: 35.6060, lng: 139.7325, km: 9.6 },
-            { lat: 35.5990, lng: 139.7305, km: 10.4 },
-            { lat: 35.5920, lng: 139.7285, km: 11.2 },
-            { lat: 35.5840, lng: 139.7245, km: 12.2 },
-            { lat: 35.5760, lng: 139.7215, km: 13.1 },
-            { lat: 35.5680, lng: 139.7185, km: 13.9 },
-            { lat: 35.5615, lng: 139.7155, km: 14.8 },
-            { lat: 35.5565, lng: 139.7158, km: 15.3 },
-            { lat: 35.5505, lng: 139.7160, km: 16.0 },
-            { lat: 35.5455, lng: 139.7120, km: 16.5 },
-            { lat: 35.5398, lng: 139.7065, km: 17.2 },
-            { lat: 35.5360, lng: 139.7025, km: 17.7 },
-            { lat: 35.5313, lng: 139.6969, km: 18.2 },
-            // ── 川崎〜横浜 ──
-            { lat: 35.5255, lng: 139.6910, km: 18.9 },
-            { lat: 35.5180, lng: 139.6830, km: 20.1 },
-            { lat: 35.5145, lng: 139.6795, km: 20.6 },
-            { lat: 35.5105, lng: 139.6755, km: 21.3 },
-            { lat: 35.5055, lng: 139.6710, km: 21.9 },
-            { lat: 35.4980, lng: 139.6640, km: 23.2 },
-            { lat: 35.4915, lng: 139.6575, km: 24.1 },
-            { lat: 35.4835, lng: 139.6485, km: 25.2 },
-            { lat: 35.4780, lng: 139.6415, km: 26.1 },
-            { lat: 35.4715, lng: 139.6325, km: 27.5 },
-            { lat: 35.4690, lng: 139.6280, km: 28.0 },
-            { lat: 35.4658, lng: 139.6223, km: 28.8 },
-            // ── 横浜〜戸塚 ──
-            { lat: 35.4620, lng: 139.6175, km: 29.4 },
-            { lat: 35.4570, lng: 139.6130, km: 30.1 },
-            { lat: 35.4510, lng: 139.6080, km: 30.8 },
-            { lat: 35.4435, lng: 139.6015, km: 31.8 },
-            { lat: 35.4395, lng: 139.5975, km: 32.3 },
-            { lat: 35.4340, lng: 139.5910, km: 33.1 },
-            { lat: 35.4300, lng: 139.5860, km: 33.7 },
-            { lat: 35.4225, lng: 139.5780, km: 35.2 },
-            { lat: 35.4185, lng: 139.5700, km: 36.2 },
-            { lat: 35.4155, lng: 139.5630, km: 37.1 },
-            { lat: 35.4120, lng: 139.5555, km: 38.2 },
-            { lat: 35.4085, lng: 139.5500, km: 38.8 },
-            { lat: 35.4045, lng: 139.5440, km: 39.5 },
-            { lat: 35.4025, lng: 139.5395, km: 40.0 },
-            { lat: 35.4001, lng: 139.5343, km: 40.9 },
-            // ── 戸塚〜藤沢 ──
-            { lat: 35.3930, lng: 139.5330, km: 41.8 },
-            { lat: 35.3850, lng: 139.5320, km: 42.7 },
-            { lat: 35.3780, lng: 139.5315, km: 43.5 },
-            { lat: 35.3710, lng: 139.5312, km: 44.3 },
-            { lat: 35.3635, lng: 139.5311, km: 45.2 },
-            { lat: 35.3538, lng: 139.5311, km: 46.5 },
-            { lat: 35.3490, lng: 139.5240, km: 47.3 },
-            { lat: 35.3440, lng: 139.5100, km: 48.8 },
-            { lat: 35.3420, lng: 139.5000, km: 49.7 },
-            { lat: 35.3410, lng: 139.4940, km: 50.3 },
-            { lat: 35.3389, lng: 139.4871, km: 51.1 },
-            // ── 藤沢〜茅ケ崎 ──
-            { lat: 35.3382, lng: 139.4780, km: 52.0 },
-            { lat: 35.3375, lng: 139.4680, km: 53.0 },
-            { lat: 35.3371, lng: 139.4580, km: 53.9 },
-            { lat: 35.3368, lng: 139.4475, km: 54.8 },
-            { lat: 35.3350, lng: 139.4365, km: 55.7 },
-            { lat: 35.3325, lng: 139.4250, km: 55.8 },
-            { lat: 35.3315, lng: 139.4165, km: 56.4 },
-            { lat: 35.3304, lng: 139.4074, km: 56.8 },
-            // ── 茅ケ崎〜平塚 ──
-            { lat: 35.3295, lng: 139.3990, km: 57.6 },
-            { lat: 35.3285, lng: 139.3925, km: 58.3 },
-            { lat: 35.3280, lng: 139.3850, km: 59.2 },
-            { lat: 35.3275, lng: 139.3770, km: 60.0 },
-            { lat: 35.3268, lng: 139.3720, km: 60.6 },
-            { lat: 35.3265, lng: 139.3685, km: 61.5 },
-            { lat: 35.3267, lng: 139.3620, km: 62.2 },
-            { lat: 35.3270, lng: 139.3580, km: 62.7 },
-            { lat: 35.3273, lng: 139.3541, km: 63.8 },
-            // ── 平塚〜大磯 ──
-            { lat: 35.3258, lng: 139.3460, km: 64.6 },
-            { lat: 35.3230, lng: 139.3380, km: 65.5 },
-            { lat: 35.3205, lng: 139.3315, km: 66.1 },
-            { lat: 35.3180, lng: 139.3245, km: 66.8 },
-            { lat: 35.3155, lng: 139.3200, km: 67.2 },
-            { lat: 35.3113, lng: 139.3140, km: 67.8 },
-            // ── 大磯〜二宮 ──
-            { lat: 35.3095, lng: 139.3080, km: 68.4 },
-            { lat: 35.3080, lng: 139.3015, km: 69.2 },
-            { lat: 35.3065, lng: 139.2960, km: 69.8 },
-            { lat: 35.3050, lng: 139.2905, km: 70.5 },
-            { lat: 35.3035, lng: 139.2830, km: 71.3 },
-            { lat: 35.3015, lng: 139.2720, km: 72.2 },
-            { lat: 35.2995, lng: 139.2586, km: 73.1 },
-            // ── 二宮〜国府津 ──
-            { lat: 35.2965, lng: 139.2490, km: 73.9 },
-            { lat: 35.2940, lng: 139.2415, km: 74.7 },
-            { lat: 35.2910, lng: 139.2360, km: 75.5 },
-            { lat: 35.2875, lng: 139.2295, km: 76.2 },
-            { lat: 35.2845, lng: 139.2235, km: 76.8 },
-            { lat: 35.2815, lng: 139.2152, km: 77.7 },
-            // ── 国府津〜鴨宮 ──
-            { lat: 35.2800, lng: 139.2070, km: 78.4 },
-            { lat: 35.2780, lng: 139.1980, km: 79.5 },
-            { lat: 35.2772, lng: 139.1910, km: 80.1 },
-            { lat: 35.2759, lng: 139.1822, km: 80.8 },
-            // ── 鴨宮〜小田原 ──
-            { lat: 35.2718, lng: 139.1755, km: 81.4 },
-            { lat: 35.2680, lng: 139.1705, km: 81.9 },
-            { lat: 35.2635, lng: 139.1645, km: 82.5 },
-            { lat: 35.2605, lng: 139.1605, km: 83.0 },
-            { lat: 35.2561, lng: 139.1549, km: 83.9 },
-            // ── 小田原〜早川 ──
-            { lat: 35.2510, lng: 139.1515, km: 84.4 },
-            { lat: 35.2440, lng: 139.1485, km: 84.8 },
-            { lat: 35.2410, lng: 139.1470, km: 85.1 },
-            { lat: 35.2380, lng: 139.1452, km: 85.4 },
-            { lat: 35.2343, lng: 139.1432, km: 85.6 },
-            // ── 早川〜根府川（精密区間・海岸カーブ） ──
-            { lat: 35.2325, lng: 139.1425, km: 85.9 },
-            { lat: 35.2305, lng: 139.1415, km: 86.4 },
-            { lat: 35.2285, lng: 139.1412, km: 86.7 },
-            { lat: 35.2265, lng: 139.1410, km: 86.9 },
-            { lat: 35.2245, lng: 139.1412, km: 87.1 },
-            { lat: 35.2215, lng: 139.1415, km: 87.3 },
-            { lat: 35.2185, lng: 139.1395, km: 87.7 },
-            { lat: 35.2155, lng: 139.1378, km: 88.0 },
-            { lat: 35.2120, lng: 139.1368, km: 88.2 },
-            { lat: 35.2090, lng: 139.1365, km: 88.4 },
-            { lat: 35.2060, lng: 139.1372, km: 88.6 },
-            { lat: 35.2025, lng: 139.1384, km: 88.8 },
-            // ── 根府川〜真鶴 ──
-            { lat: 35.1995, lng: 139.1392, km: 89.1 },
-            { lat: 35.1950, lng: 139.1405, km: 89.8 },
-            { lat: 35.1910, lng: 139.1415, km: 90.2 },
-            { lat: 35.1870, lng: 139.1420, km: 90.5 },
-            { lat: 35.1830, lng: 139.1420, km: 90.7 },
-            { lat: 35.1760, lng: 139.1405, km: 91.0 },
-            { lat: 35.1680, lng: 139.1380, km: 91.2 },
-            { lat: 35.1625, lng: 139.1355, km: 91.4 },
-            { lat: 35.1561, lng: 139.1319, km: 91.7 },
-            // ── 真鶴〜湯河原 ──
-            { lat: 35.1530, lng: 139.1260, km: 92.3 },
-            { lat: 35.1505, lng: 139.1210, km: 92.8 },
-            { lat: 35.1480, lng: 139.1180, km: 93.8 },
-            { lat: 35.1472, lng: 139.1130, km: 94.3 },
-            { lat: 35.1465, lng: 139.1075, km: 94.9 },
-            { lat: 35.1462, lng: 139.1022, km: 95.5 },
-            // ── 湯河原〜熱海 ──
-            { lat: 35.1435, lng: 139.0975, km: 96.0 },
-            { lat: 35.1400, lng: 139.0950, km: 96.5 },
-            { lat: 35.1365, lng: 139.0930, km: 97.2 },
-            { lat: 35.1320, lng: 139.0910, km: 98.2 },
-            { lat: 35.1275, lng: 139.0878, km: 98.9 },
-            { lat: 35.1220, lng: 139.0815, km: 101.5 },
-            { lat: 35.1175, lng: 139.0805, km: 102.1 },
-            { lat: 35.1110, lng: 139.0790, km: 103.2 },
-            { lat: 35.1075, lng: 139.0785, km: 103.8 },
-            { lat: 35.1037, lng: 139.0781, km: 104.6 }
+            { lat: 35.6811, lng: 139.7671, km: 0.0 },   // 東京
+            { lat: 35.6765, lng: 139.7635, km: 0.8 },   // 有楽町手前
+            { lat: 35.6710, lng: 139.7595, km: 1.4 },   
+            { lat: 35.6664, lng: 139.7583, km: 1.9 },   // 新橋
+            { lat: 35.6595, lng: 139.7572, km: 2.7 },   // 浜松町
+            { lat: 35.6530, lng: 139.7538, km: 3.5 },   
+            { lat: 35.6455, lng: 139.7475, km: 4.6 },   // 田町
+            { lat: 35.6375, lng: 139.7425, km: 5.7 },   // 高輪ゲートウェイ付近
+            { lat: 35.6301, lng: 139.7404, km: 6.8 },   // 品川
+            { lat: 35.6150, lng: 139.7355, km: 8.5 },   
+            { lat: 35.6060, lng: 139.7325, km: 9.6 },   // 大井町付近
+            { lat: 35.5840, lng: 139.7245, km: 12.2 },  
+            { lat: 35.5615, lng: 139.7155, km: 14.8 },  // 大森
+            { lat: 35.5505, lng: 139.7160, km: 16.0 },  // 蒲田
+            { lat: 35.5398, lng: 139.7065, km: 17.2 },  // 六郷土手（多摩川）
+            { lat: 35.5313, lng: 139.6969, km: 18.2 },  // 川崎
+            { lat: 35.5180, lng: 139.6830, km: 20.1 },  
+            { lat: 35.5105, lng: 139.6755, km: 21.3 },  // 鶴見
+            { lat: 35.4980, lng: 139.6640, km: 23.2 },  
+            { lat: 35.4835, lng: 139.6485, km: 25.2 },  // 新子安
+            { lat: 35.4715, lng: 139.6325, km: 27.5 },  // 東神奈川
+            { lat: 35.4658, lng: 139.6223, km: 28.8 },  // 横浜
+            { lat: 35.4570, lng: 139.6130, km: 30.1 },  // 平沼橋付近
+            { lat: 35.4435, lng: 139.6015, km: 31.8 },  // 保土ケ谷
+            { lat: 35.4340, lng: 139.5910, km: 33.1 },  // 清水谷戸トンネル東
+            { lat: 35.4225, lng: 139.5780, km: 35.2 },  // 泉区・戸塚区境
+            { lat: 35.4120, lng: 139.5555, km: 38.2 },  // 東戸塚
+            { lat: 35.4045, lng: 139.5440, km: 39.5 },  
+            { lat: 35.4001, lng: 139.5343, km: 40.9 },  // 戸塚
+            { lat: 35.3780, lng: 139.5315, km: 43.5 },  
+            { lat: 35.3538, lng: 139.5311, km: 46.5 },  // 大船
+            { lat: 35.3440, lng: 139.5100, km: 48.8 },  
+            { lat: 35.3389, lng: 139.4871, km: 51.1 },  // 藤沢
+            { lat: 35.3375, lng: 139.4680, km: 53.0 },  
+            { lat: 35.3368, lng: 139.4475, km: 54.8 },  // 辻堂
+            { lat: 35.3325, lng: 139.4250, km: 55.8 },  
+            { lat: 35.3304, lng: 139.4074, km: 56.8 },  // 茅ケ崎
+            { lat: 35.3280, lng: 139.3850, km: 59.2 },  
+            { lat: 35.3265, lng: 139.3685, km: 61.5 },  // 馬入川橋梁（相模川）
+            { lat: 35.3273, lng: 139.3541, km: 63.8 },  // 平塚
+            { lat: 35.3230, lng: 139.3380, km: 65.5 },  
+            { lat: 35.3180, lng: 139.3245, km: 66.8 },  
+            { lat: 35.3113, lng: 139.3140, km: 67.8 },  // 大磯
+            { lat: 35.3080, lng: 139.3015, km: 69.2 },  
+            { lat: 35.3050, lng: 139.2905, km: 70.5 },  
+            { lat: 35.2995, lng: 139.2586, km: 73.1 },  // 二宮
+            { lat: 35.2910, lng: 139.2360, km: 75.5 },  
+            { lat: 35.2815, lng: 139.2152, km: 77.7 },  // 国府津
+            { lat: 35.2780, lng: 139.1980, km: 79.5 },  
+            { lat: 35.2759, lng: 139.1822, km: 80.8 },  // 鴨宮
+            { lat: 35.2635, lng: 139.1645, km: 82.5 },  // 酒匂川
+            { lat: 35.2561, lng: 139.1549, km: 83.9 },  // 小田原
+            { lat: 35.2440, lng: 139.1485, km: 84.8 },  
+            { lat: 35.2343, lng: 139.1432, km: 85.6 },  // 早川
+            { lat: 35.2305, lng: 139.1415, km: 86.4 },  // 早川〜根府川（石橋カーブ）
+            { lat: 35.2265, lng: 139.1410, km: 86.9 },  
+            { lat: 35.2215, lng: 139.1415, km: 87.3 },  // 「ねぶはや」海岸線
+            { lat: 35.2155, lng: 139.1378, km: 88.0 },  // 石橋山
+            { lat: 35.2090, lng: 139.1365, km: 88.4 },  
+            { lat: 35.2025, lng: 139.1384, km: 88.8 },  // 根府川
+            { lat: 35.1950, lng: 139.1405, km: 89.8 },  // 白糸川橋梁
+            { lat: 35.1830, lng: 139.1420, km: 90.7 },  // 真鶴道路交差
+            { lat: 35.1680, lng: 139.1380, km: 91.2 },  
+            { lat: 35.1561, lng: 139.1319, km: 91.7 },  // 真鶴
+            { lat: 35.1480, lng: 139.1180, km: 93.8 },  
+            { lat: 35.1462, lng: 139.1022, km: 95.5 },  // 湯河原
+            { lat: 35.1320, lng: 139.0910, km: 98.2 },  // 泉越トンネル東
+            { lat: 35.1220, lng: 139.0815, km: 101.5 }, // 湯河原〜熱海（伊豆山）
+            { lat: 35.1110, lng: 139.0790, km: 103.2 }, 
+            { lat: 35.1037, lng: 139.0781, km: 104.6 }  // 熱海
         ];
 
         // 💡 グローバル変数(スコープデッドゾーンエラー防止のためvarで一元化)
@@ -510,14 +394,25 @@
             
             stations.forEach(function(station, index) {
                 html += `
-                    <div id="station-${station.id}" class="station-row relative flex items-center justify-between h-4 opacity-35 transition-all duration-300">
+                    <div id="station-${station.id}" class="station-row relative flex items-center justify-between h-5 opacity-35 transition-all duration-300">
                         <div class="absolute left-[12px] -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-slate-700 z-10 border border-appDark"></div>
                         <span class="station-name text-slate-300 font-bold text-xs pl-7">${station.name}</span>
                         <span class="font-mono text-[9px] text-slate-500">${station.km.toFixed(1)}km</span>
                     </div>
                 `;
                 
-
+                if (index < stations.length - 1) {
+                    var nextStation = stations[index + 1];
+                    html += `
+                        <div id="section-${station.id}-${nextStation.id}" class="section-row relative items-center justify-between h-5 my-0.5 transition-all duration-300" style="display:none">
+                            <div class="absolute left-[12px] -translate-x-1/2 w-4 h-4 flex items-center justify-center z-10 current-location-pulse">
+                                <i class="fa-solid fa-location-arrow text-railBlue text-[10px] rotate-[135deg]"></i>
+                            </div>
+                            <span class="text-slate-300 text-[9px] tracking-wider font-bold pl-7">走行区間 (${station.name}〜${nextStation.name})</span>
+                            <span id="section-km-label-${station.id}" class="text-[9px] text-slate-400 font-mono font-bold">87.3km</span>
+                        </div>
+                    `;
+                }
             });
             container.innerHTML = html;
         }
@@ -684,7 +579,7 @@
 
             // 停車駅タイムライン同期
             document.querySelectorAll(".station-row").forEach(function(el) { el.classList.add("opacity-35"); });
-
+            document.querySelectorAll(".section-row").forEach(function(el) { el.style.display = "none"; });
 
             stations.forEach(function(st) {
                 var el = document.getElementById(`station-${st.id}`);
@@ -696,10 +591,9 @@
 
             var prevRow = document.getElementById(`station-${prevStation.id}`);
             var nextRow = document.getElementById(`station-${nextStation.id}`);
-            document.querySelectorAll(".station-row").forEach(function(el) { el.classList.remove("is-current"); });
             if (prevRow) {
                 prevRow.classList.remove("opacity-35", "opacity-60");
-                prevRow.classList.add("opacity-100", "is-current");
+                prevRow.classList.add("opacity-100");
                 prevRow.querySelector(".station-name").className = "station-name text-blue-400 font-black text-xs pl-7";
             }
             if (nextRow) {
@@ -708,16 +602,29 @@
                 nextRow.querySelector(".station-name").className = "station-name text-blue-400 font-black text-xs pl-7";
             }
 
-            // タイムラインを現在駅へ自動スクロール
-            setTimeout(function() {
-                var container = document.getElementById("station-timeline-container");
-                var activeEl = document.getElementById("station-" + prevStation.id);
-                if (container && activeEl) {
-                    var offset = activeEl.offsetTop;
-                    var containerHeight = container.clientHeight;
-                    container.scrollTo({ top: offset - containerHeight / 2, behavior: "smooth" });
+            var activeSection = document.getElementById(`section-${prevStation.id}-${nextStation.id}`);
+            if (activeSection) {
+                activeSection.style.display = "flex";
+                
+                var kmLabel = document.getElementById(`section-km-label-${prevStation.id}`);
+                if (kmLabel) {
+                    kmLabel.innerText = `${km.toFixed(1)}km`;
                 }
-            }, 40);
+
+                // 💡 タイムラインを自動でスムーズかつ確実に追従スクロール（非同期レンダリング対策）
+                setTimeout(function() {
+                    var container = document.getElementById("station-timeline-container");
+                    if (container && activeSection) {
+                        var offset = activeSection.offsetTop;
+                        var containerHeight = container.clientHeight;
+                        var elementHeight = activeSection.clientHeight;
+                        container.scrollTo({
+                            top: offset - (containerHeight / 2) + (elementHeight / 2),
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 40);
+            }
         }
 
         function setMode(mode) {
