@@ -40,7 +40,7 @@
             font-family: 'Noto Sans JP', sans-serif;
             background-color: #000000;
             -webkit-tap-highlight-color: transparent;
-            
+            overflow: hidden;
         }
         /* スクロールバー非表示 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -85,7 +85,7 @@
         <!-- 路線名、GPS/デモ切り替えスイッチ -->
         <div class="flex items-center justify-between mb-1">
             <div class="flex items-center gap-1.5">
-                <div class="w-6 h-6 bg-white border border-orange-500 rounded flex items-center justify-center shadow-sm">
+                <div class="w-5.5 h-5.5 bg-white border border-orange-500 rounded flex items-center justify-center shadow-sm">
                     <span class="text-appDark font-black text-[10px] font-mono tracking-tighter">JT</span>
                 </div>
                 <h1 class="text-[13px] font-black tracking-wide text-white">東海道線（JR東日本）</h1>
@@ -148,7 +148,7 @@
             </div>
             <div class="col-span-3 bg-appCard border border-appBorder rounded-lg p-1.5 flex flex-col justify-between items-center text-center">
                 <span class="text-[8px] text-slate-400 font-medium flex items-center gap-1"><i class="fa-solid fa-satellite-dish text-slate-500"></i>GPS</span>
-                <div id="ui-gps-badge" class="text-[9px] font-bold text-blue-400 mt-0.5 bg-blue-500/10 px-1 py-0.5 rounded border border-blue-500/15 w-full">高</div>
+                <div id="ui-gps-badge" class="text-[9px] font-bold text-blue-400 mt-0.5 bg-blue-500/10 px-1 py-0.2 rounded border border-blue-500/15 w-full">高</div>
             </div>
         </div>
 
@@ -178,7 +178,7 @@
     </div>
 
     <!-- 3. 下部エリア -->
-    <div class="flex-grow flex flex-col min-h-0 bg-gradient-to-b from-appDark to-[#05080e] px-4 pt-2 pb-4 space-y-3">
+    <div class="flex-grow flex flex-col overflow-hidden bg-gradient-to-b from-appDark to-[#05080e] px-4 pt-2 pb-4 space-y-3">
         
         <!-- 沿線スポットセクション (横スクロール) -->
         <div class="shrink-0 pt-0.5">
@@ -243,7 +243,7 @@
                         <div class="flex justify-between items-center">
                             <span class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">61.5km</span>
                             <span class="text-[9px] text-indigo-400 font-bold flex items-center gap-1">
-                                <i class="fa-solid fa-bridge"></i> 建造物
+                                <i class="fa-solid fa-gantry-crane"></i> 建造物
                             </span>
                         </div>
                         <h4 class="text-xs font-black text-white mt-1.5">相模川橋梁（旧馬入川橋）</h4>
@@ -404,7 +404,7 @@
                 if (index < stations.length - 1) {
                     var nextStation = stations[index + 1];
                     html += `
-                        <div id="section-${station.id}-${nextStation.id}" class="section-row relative items-center justify-between h-5 my-0.5 transition-all duration-300" style="display:none">
+                        <div id="section-${station.id}-${nextStation.id}" class="section-row relative hidden items-center justify-between h-5 my-0.5 transition-all duration-300">
                             <div class="absolute left-[12px] -translate-x-1/2 w-4 h-4 flex items-center justify-center z-10 current-location-pulse">
                                 <i class="fa-solid fa-location-arrow text-railBlue text-[10px] rotate-[135deg]"></i>
                             </div>
@@ -548,10 +548,9 @@
             if (map && trainMarker) {
                 trainMarker.setLatLng(coords);
                 
-                var mapContainer = map.getContainer();
-                if (mapContainer) {
-                    mapContainer.style.transformOrigin = 'center center';
-                    mapContainer.style.transform = 'rotate(' + (-bearing) + 'deg)';
+                var mapPane = document.querySelector('.rotated-map .leaflet-map-pane');
+                if (mapPane) {
+                    mapPane.style.transform = `rotate(${-bearing}deg)`;
                 }
 
                 var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
@@ -579,7 +578,7 @@
 
             // 停車駅タイムライン同期
             document.querySelectorAll(".station-row").forEach(function(el) { el.classList.add("opacity-35"); });
-            document.querySelectorAll(".section-row").forEach(function(el) { el.style.display = "none"; });
+            document.querySelectorAll(".section-row").forEach(function(el) { el.classList.add("hidden"); });
 
             stations.forEach(function(st) {
                 var el = document.getElementById(`station-${st.id}`);
@@ -604,7 +603,8 @@
 
             var activeSection = document.getElementById(`section-${prevStation.id}-${nextStation.id}`);
             if (activeSection) {
-                activeSection.style.display = "flex";
+                activeSection.classList.remove("hidden");
+                activeSection.classList.add("flex");
                 
                 var kmLabel = document.getElementById(`section-km-label-${prevStation.id}`);
                 if (kmLabel) {
