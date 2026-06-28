@@ -48,6 +48,14 @@
         /* スクロールバー非表示 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* カード短文の簡易表示（2行でクランプ。続きは「詳細を見る」で全文） */
+        .clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         
         /* 地図の周辺影効果 */
         .map-shadow {
@@ -170,8 +178,8 @@
                     <span id="ui-current-id" class="text-[9px] text-slate-500 font-mono font-bold text-left">JT-01</span>
                 </div>
                 <!-- 右：駅紹介カード (「駅のごご紹介」見出しとアイコンを全廃してすっきりさせ、左側に大きく拡大) -->
-                <div class="flex-grow bg-slate-900 border border-railOrange/35 rounded-lg p-1.5 flex flex-col justify-center h-[42px] overflow-hidden">
-                    <p id="ui-station-intro" class="text-[9.5px] text-slate-100 leading-snug line-clamp-2 font-medium">日本の起点となる赤レンガ造りの歴史的ターミナル駅。</p>
+                <div class="flex-grow bg-slate-900 border border-railOrange/35 rounded-lg p-1.5 flex flex-col justify-center h-[42px] overflow-y-auto no-scrollbar">
+                    <p id="ui-station-intro" class="text-[9.5px] text-slate-100 leading-snug font-medium">日本の起点となる赤レンガ造りの歴史的ターミナル駅。</p>
                 </div>
             </div>
         </div>
@@ -229,108 +237,8 @@
         <!-- 沿線スポットセクション (横スクロール。不透明度を80%に向上させ、色合いを格段にはっきりクッキリと調整) -->
         <div class="shrink-0 pt-2">
             <div id="scenic-card-container" class="flex gap-2.5 overflow-x-auto px-4 pb-1 no-scrollbar snap-x scroll-smooth">
-                
-                <!-- 景観カテゴリ: 馬入川 -->
-                <div id="card-banyu" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
-                    <div class="flex flex-col h-full justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">61.5km</span>
-                                <span class="text-[9px] text-indigo-400 font-bold flex items-center gap-1">
-                                    <i class="fa-solid fa-bridge-water text-indigo-400"></i> 建造物
-                                </span>
-                            </div>
-                            <h4 class="text-xs font-black text-white mt-1.5">相模川橋梁（旧馬入川橋）</h4>
-                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-banyu-short">大正関東大震災 of 旧橋脚。歴史的な鋼材デザインが特徴的です。</p>
-                            <!-- 詳細テキスト -->
-                            <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-banyu-detail">
-                                大正12年の関東大震災時に、地盤の液状化などにより一部の橋脚が倒壊、傾斜しました。近代建造物の災害遺構としてきわめて貴重であり、国の史跡に指定されています。
-                            </p>
-                        </div>
-                        <!-- 詳細ボタン: caret-down（三角印）に変更 -->
-                        <button onclick="toggleCardDetails('banyu')" class="mt-2 text-left text-[8px] text-indigo-400 font-bold flex items-center gap-1 hover:text-indigo-300">
-                            <i class="fa-solid fa-caret-down" id="icon-banyu"></i> <span id="label-banyu">詳細を見る</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 景観カテゴリ: ねぶはや -->
-                <div id="card-nebu" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
-                    <div class="flex flex-col h-full justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded">87.1km</span>
-                                <span class="text-[9px] text-sky-400 font-bold flex items-center gap-1">
-                                    <svg class="w-3 h-3 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                        <circle cx="12" cy="13" r="4" />
-                                    </svg> 景観
-                                </span>
-                            </div>
-                            <h4 class="text-xs font-black text-white mt-1.5">「ねぶはや」絶景区間</h4>
-                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-nebu-short">早川〜根府川間で相模湾が一望できる、東海道線屈指の美しさを誇る車窓風景。</p>
-                            <!-- 詳細テキスト -->
-                            <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-nebu-detail">
-                                車窓いっぱいに広がるコバルトブルーの相模湾、遠くに見える伊豆半島や大島。列車内からしか出会うことのできない特別な青いパノラマです。
-                            </p>
-                        </div>
-                        <button onclick="toggleCardDetails('nebu')" class="mt-2 text-left text-[8px] text-sky-400 font-bold flex items-center gap-1 hover:text-sky-300">
-                            <i class="fa-solid fa-caret-down" id="icon-nebu"></i> <span id="label-nebu">詳細を見る</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 歴史カテゴリ: 石橋山 (歴史アイコンを分かりやすい神殿マーク fa-landmark に差し戻し) -->
-                <div id="card-ishi" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
-                    <div class="flex flex-col h-full justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">88.0km</span>
-                                <span class="text-[9px] text-amber-500 font-bold flex items-center gap-1">
-                                    <i class="fa-solid fa-landmark text-amber-500"></i> 歴史
-                                </span>
-                            </div>
-                            <h4 class="text-xs font-black text-white mt-1.5">石橋山古戦場</h4>
-                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-ishi-short">1180年、源頼朝が挙兵直後に平家軍と激突し大敗した地。車窓右手に歴史が眠ります。</p>
-                            <!-- 詳細テキスト -->
-                            <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-ishi-detail">
-                                挙兵間もない頼朝の寡兵300に対し、大庭景親率いる平家軍3000が夜陰に乗じて急襲。頼朝は付近のしとどの窟に隠れて難を逃れたのち、房総へと脱出して再起を果たしました。
-                            </p>
-                        </div>
-                        <button onclick="toggleCardDetails('ishi')" class="mt-2 text-left text-[8px] text-amber-500 font-bold flex items-center gap-1 hover:text-amber-400">
-                            <i class="fa-solid fa-caret-down" id="icon-ishi"></i> <span id="label-ishi">詳細を見る</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 自然カテゴリ: 湯河原 -->
-                <div id="card-yugawara" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
-                    <div class="flex flex-col h-full justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">95.5km</span>
-                                <span class="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
-                                    <svg class="w-3 h-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 5.5a7 7 0 0 1-13.9 3.5" />
-                                        <path d="M9 22v-4" />
-                                    </svg> 自然
-                                </span>
-                            </div>
-                            <h4 class="text-xs font-black text-white mt-1.5">湯河原万葉の自然</h4>
-                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-yugawara-short">万葉集にも詠まれた名湯地。箱根山系のふもとを巡る緑豊かな景色です。</p>
-                            <!-- 詳細テキスト -->
-                            <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-yugawara-detail">
-                                古くから万葉の歌人に愛され、温泉の湯けむりと相模湾の温暖な海風が心地よく重なり合う風光明媚な谷あい。車窓からは箱根外輪山へと緩やかに連なる斜面のみかん畑が鮮やかに望めます。
-                            </p>
-                        </div>
-                        <button onclick="toggleCardDetails('yugawara')" class="mt-2 text-left text-[8px] text-emerald-400 font-bold flex items-center gap-1 hover:text-emerald-300">
-                            <i class="fa-solid fa-caret-down" id="icon-yugawara"></i> <span id="label-yugawara">詳細を見る</span>
-                        </button>
-                    </div>
-                </div>
-
+                <!-- カードは SPOTS 配列から renderSpotCards() で自動生成 -->
             </div>
-
             <!-- 💡 詳細を一括でしまえる一括格納バー (文字は「折りたたむ」のみ、アイコンは逆三角caret-up) -->
             <div id="collapse-all-bar" class="hidden justify-center items-center py-1 cursor-pointer hover:bg-slate-900/50 transition-all border-b border-appBorder" onclick="collapseAllScenicCards()">
                 <div class="flex items-center gap-1.5 text-[9px] text-slate-400 font-bold">
@@ -370,8 +278,8 @@
     <script>
         // 東海道本線（東京〜熱海）全21駅の座標定義 ＆ 各駅紹介データ
         var stations = [
-            { id: "JT-01", name: "東京", rubi: "とうきょう", km: 0.0, coords: [35.681183, 139.766758], city: "東京都千代田区", intro: "日本の鉄路の起点となる赤レンガ造りの美しき重要文化財駅舎。" },
-            { id: "JT-02", name: "新橋", rubi: "しんばし", km: 2.0, coords: [35.666395, 139.758226], city: "東京都港区", intro: "明治5年に日本初の鉄道が開業した「鉄道発祥の地」として名高い歴史の街。" },
+            { id: "JT-01", name: "東京", rubi: "とうきょう", km: 0.0, coords: [35.681183, 139.766758], city: "東京都千代田区", intro: "東京駅が開業したのは1914年、日本の鉄道開業（1872年）から約12年後のこと。丸の内駅舎は1945年の東京大空襲により3階部分は崩落したものの、1階・2階のレンガ壁のほとんどは建造当時のまま原型をとどめている。9番線ホーム中程には東海道線本線の起点、0キロポストがある。" },
+            { id: "JT-02", name: "新橋", rubi: "しんばし", km: 2.0, coords: [35.666395, 139.758226], city: "東京都港区", intro: "1872年（明治5年）10月14日、日本初の鉄道路線が新橋〜横浜間で正式開業したことから、新橋は「日本の鉄道発祥の地」として広く知られている。駅前にはSL広場や旧新橋停車場（鉄道歴史展示室）もある。（元々の新橋駅は現在の新橋駅の位置とは異なっていた。新橋駅すぐ南側のカーブから日本最初の鉄道に合流することとなる。）" },
             { id: "JT-03", name: "品川", rubi: "しながわ", km: 6.6, coords: [35.630428, 139.739096], city: "東京都港区", intro: "旧宿場町から発展を続け、現在はリニア新幹線なども入る最先端メガターミナル。" },
             { id: "JT-04", name: "川崎", rubi: "かわさき", km: 18.5, coords: [35.531356, 139.696833], city: "神奈川県川崎市", intro: "工業地帯の発展を支えた拠点。現在は巨大ショッピングモール等が並ぶ活気ある駅。" },
             { id: "JT-05", name: "横浜", rubi: "よこはま", km: 28.8, coords: [35.465825, 139.622257], city: "神奈川県横浜市", intro: "世界的な乗降客数を誇る一大連絡口。みなとみらいや中華街への最寄り。" },
@@ -664,9 +572,33 @@
             { lat: 35.10266, lng: 139.07654, km: 104.6 },
         ];
 
+        // 💡 沿線スポット定義（カテゴリ→アイコン/色、スポット本体）。ここに行を足すだけで地図ピン・カード・ハイライトに反映
+        var CATEGORIES = {
+            "建造物": { icon: "fa-bridge-water", color: "#818cf8" },
+            "景観":   { icon: "fa-camera",       color: "#60a5fa" },
+            "歴史":   { icon: "fa-landmark",     color: "#f59e0b" },
+            "自然":   { icon: "fa-leaf",         color: "#34d399" },
+            "駅":     { icon: "fa-train",        color: "#fb7185" },
+            "その他": { icon: "fa-lightbulb",    color: "#facc15" }
+        };
+
+        var SPOTS = [
+            { name: "東京レンガ高架橋", cat: "その他", kmStart: 0.33, kmEnd: 3.13, lat: 35.668803, lng: 139.758354, short: "明治43年開業時の姿をほぼそのまま残す、日本最古の高架線。現存するレンガ造連続アーチ鉄道橋として最古のひとつ。", detail: "", show: true },
+            { name: "東海道新幹線と並走", cat: "その他", kmStart: 0.55, kmEnd: 5.52, lat: 35.657173, lng: 139.757517, short: "どちらも新橋付近までカーブの多い区間を走行する。並走したらラッキー。", detail: "", show: true },
+            { name: "有楽町駅", cat: "駅", kmStart: 0.77, kmEnd: 1.06, lat: 35.674901, lng: 139.763112, short: "山手線、京浜東北線、および東京メトロ有楽町線が通る。国内最初の高架下駅舎としても知られている。", detail: "高架下には様々なお店が立ち並び、昔ながらの飲み屋街が広がっている。日比谷・銀座といった東京屈指の気品漂うエリアにも隣接する。", show: true },
+            { name: "ゆりかもめと並走", cat: "その他", kmStart: 2.3, kmEnd: 2.96, lat: 35.660747, lng: 139.758393, short: "全線無人自動運転、お台場や有明などの臨海副都心（ウォーターフロント）へのアクセスに便利な、もはやアトラクションのような路線。", detail: "", show: true },
+            { name: "浜松町駅", cat: "駅", kmStart: 3.13, kmEnd: 3.35, lat: 35.655365, lng: 139.757073, short: "山手線、京浜東北線、および東京パノラマライン（東京モノレール）が通る。", detail: "東京モノレールは、2002年にJR東日本により子会社化され、同年から京浜東北線の快速の停車駅となった。", show: true },
+            { name: "田町駅", cat: "駅", kmStart: 4.57, kmEnd: 4.81, lat: 35.645762, lng: 139.747622, short: "ビジネス街と学生街（慶応義塾大学三田キャンパス）が融合した活気あるエリア。", detail: "付近には森永乳業やバンダイナムコの本社もある。", show: true },
+            { name: "東京総合車両センター（田町センター）", cat: "その他", kmStart: 5.37, kmEnd: 6.32, lat: 35.637135, lng: 139.741874, short: "上野東京ライン（東海道・宇都宮・高崎・常磐線）の車両やサンライズ瀬戸・出雲号が留置される。", detail: "かつては「田町車両センター」として巨大な車両基地であったが、2013年に廃止され、高輪ゲートウェイシティをはじめとした再開発が行われている。", show: true },
+            { name: "高輪ゲートウェイ駅", cat: "駅", kmStart: 5.95, kmEnd: 6.18, lat: 35.635268, lng: 139.741067, short: "2020年に開業。乗降客数は山手線全駅の中で最少だが、再開発に伴い増加傾向。", detail: "駅舎の設計は隈研吾氏。開業同年にグッドデザイン賞を受賞している。", show: true }
+        ];
+
+        var SPOT_IDS = []; // renderSpotCards() が採番
+
         // 💡 グローバル変数
         var map;
         var trainMarker;
+        var spotMarkers = [];
         var currentMode = "demo";
         var currentKm = 0.0;
         var demoPlayInterval = null;
@@ -696,6 +628,70 @@
         }
 
         // タイムライン構築 (無駄な要素を全廃、ズレを補正)
+        // 💡 スポットの km 表示（点なら単一、範囲なら a–b）
+        function spotKmLabel(s) {
+            if (Math.abs(s.kmEnd - s.kmStart) < 0.05) return s.kmStart.toFixed(1) + "km";
+            return s.kmStart.toFixed(1) + "–" + s.kmEnd.toFixed(1) + "km";
+        }
+
+        // 💡 SPOTS 配列からカードを自動生成（簡易表示は2行クランプ＋「詳細を見る」で全文）
+        function renderSpotCards() {
+            var container = document.getElementById("scenic-card-container");
+            if (!container) return;
+            SPOT_IDS = [];
+            var html = "";
+            SPOTS.forEach(function(s, i) {
+                if (s.show === false) return;
+                var id = "spot-" + i;
+                SPOT_IDS.push(id);
+                var cat = CATEGORIES[s.cat] || { icon: "fa-circle-info", color: "#94a3b8" };
+                var hasDetail = !!(s.detail && s.detail.trim().length > 0);
+                var needExpand = hasDetail || (s.short && s.short.length > 28);
+                var fullText = (s.short || "") + (hasDetail ? ("<br><br>" + s.detail) : "");
+                html += `
+                <div id="card-${id}" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
+                    <div class="flex flex-col h-full justify-between">
+                        <div>
+                            <div class="flex justify-between items-center gap-1">
+                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 whitespace-nowrap">${spotKmLabel(s)}</span>
+                                <span class="text-[9px] font-bold flex items-center gap-1 whitespace-nowrap" style="color:${cat.color}">
+                                    <i class="fa-solid ${cat.icon}"></i> ${s.cat}
+                                </span>
+                            </div>
+                            <h4 class="text-xs font-black text-white mt-1.5 leading-snug">${s.name}</h4>
+                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal clamp-2" id="desc-${id}-short">${s.short || ""}</p>
+                            <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-${id}-detail">${fullText}</p>
+                        </div>
+                        ${needExpand ? `
+                        <button onclick="toggleCardDetails('${id}')" class="mt-2 text-left text-[8px] font-bold flex items-center gap-1" style="color:${cat.color}">
+                            <i class="fa-solid fa-caret-down" id="icon-${id}"></i> <span id="label-${id}">詳細を見る</span>
+                        </button>` : ``}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // 💡 SPOTS 配列から地図ピンを自動生成（カテゴリ別アイコン・色）
+        function renderSpotMarkers() {
+            if (!map) return;
+            spotMarkers.forEach(function(m) { map.removeLayer(m); });
+            spotMarkers = [];
+            SPOTS.forEach(function(s) {
+                if (s.show === false) return;
+                var cat = CATEGORIES[s.cat] || { icon: "fa-circle-info", color: "#94a3b8" };
+                var icon = L.divIcon({
+                    html: `<div class="fix-rotate w-6 h-6 rounded-full flex items-center justify-center shadow-md" style="background:${cat.color}33;border:1px solid ${cat.color};color:${cat.color}"><i class="fa-solid ${cat.icon} text-[9px]"></i></div>`,
+                    className: '',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+                var m = L.marker([s.lat, s.lng], { icon: icon }).addTo(map);
+                m.bindTooltip(s.name, { direction: 'top', offset: [0, -8] });
+                spotMarkers.push(m);
+            });
+        }
+
         function initTimeline() {
             var container = document.getElementById("timeline-stations");
             var html = "";
@@ -939,33 +935,23 @@
                 }
             }
 
-            // 景観スポット自動スライドハバーサインハイライト
-            var spots = [
-                { id: "card-banyu", targetKm: 61.5 },
-                { id: "card-nebu", targetKm: 87.1 },
-                { id: "card-ishi", targetKm: 88.0 },
-                { id: "card-yugawara", targetKm: 95.5 }
-            ];
-
+            // 沿線スポット ハイライト＆自動スライド（km範囲対応：範囲内=接近とみなす）
             var closestSpotId = null;
             var minDiff = Infinity;
 
-            spots.forEach(function(spot) {
-                var card = document.getElementById(spot.id);
-                if (card) {
-                    var diff = Math.abs(km - spot.targetKm);
-                    if (diff < minDiff) {
-                        minDiff = diff;
-                        closestSpotId = spot.id;
-                    }
+            SPOT_IDS.forEach(function(id) {
+                var s = SPOTS[parseInt(id.split("-")[1], 10)];
+                var card = document.getElementById("card-" + id);
+                if (!card || !s) return;
+                // 現在 km と範囲 [kmStart,kmEnd] の距離（範囲内は0）
+                var diff = (km >= s.kmStart && km <= s.kmEnd) ? 0
+                           : Math.min(Math.abs(km - s.kmStart), Math.abs(km - s.kmEnd));
+                if (diff < minDiff) { minDiff = diff; closestSpotId = "card-" + id; }
 
-                    // スポットの前後2.5km内に接近したら、明瞭でくっきりした境界線カラーで光らせる(薄暗さを全廃)
-                    if (diff < 2.5) {
-                        card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-blue-500 rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 scale-[1.02] opacity-100 relative group shadow-[0_0_12px_rgba(59,130,246,0.3)]";
-                    } else {
-                        // 非接近中も opacity-80 でくすみ・薄暗さを排除し非常にクリアに見えるよう補正
-                        card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40";
-                    }
+                if (diff < 2.5) {
+                    card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-blue-500 rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 scale-[1.02] opacity-100 relative group shadow-[0_0_12px_rgba(59,130,246,0.3)]";
+                } else {
+                    card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40";
                 }
             });
 
@@ -1108,8 +1094,7 @@
 
         // すべてのスポットカードを縦方向に折りたたんで格納する
         function collapseAllScenicCards() {
-            var spots = ["banyu", "nebu", "ishi", "yugawara"];
-            spots.forEach(function(id) {
+            SPOT_IDS.forEach(function(id) {
                 var shortDesc = document.getElementById(`desc-${id}-short`);
                 var detailDesc = document.getElementById(`desc-${id}-detail`);
                 var label = document.getElementById(`label-${id}`);
@@ -1118,8 +1103,8 @@
                 if (detailDesc && !detailDesc.classList.contains("hidden")) {
                     detailDesc.classList.add("hidden");
                     if (shortDesc) shortDesc.classList.remove("hidden");
-                    label.innerText = "詳細を見る";
-                    icon.className = "fa-solid fa-caret-down";
+                    if (label) label.innerText = "詳細を見る";
+                    if (icon) icon.className = "fa-solid fa-caret-down";
                 }
             });
 
@@ -1129,9 +1114,8 @@
 
         // 他に開いているカードがないか確認し、一括格納バーの表示状態を制御
         function checkAnyCardExpanded() {
-            var spots = ["banyu", "nebu", "ishi", "yugawara"];
             var anyExpanded = false;
-            spots.forEach(function(id) {
+            SPOT_IDS.forEach(function(id) {
                 var detailDesc = document.getElementById(`desc-${id}-detail`);
                 if (detailDesc && !detailDesc.classList.contains("hidden")) {
                     anyExpanded = true;
@@ -1362,39 +1346,9 @@
             });
             trainMarker = L.marker([35.681183, 139.766758], { icon: blueDotIcon }).addTo(map);
 
-            // スポットマッピング
-            var banyuIcon = L.divIcon({
-                html: `<div class="fix-rotate w-6 h-6 rounded-full bg-indigo-600/20 border border-indigo-400 flex items-center justify-center text-indigo-400 shadow-md shadow-indigo-500/20"><i class="fa-solid fa-bridge-water text-[9px]"></i></div>`,
-                className: '',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-            L.marker([35.33127, 139.37642], { icon: banyuIcon }).addTo(map);
-
-            var scenericIcon = L.divIcon({
-                html: `<div class="fix-rotate w-6 h-6 rounded-full bg-blue-600/20 border border-blue-400 flex items-center justify-center text-blue-400 shadow-md shadow-blue-500/20"><i class="fa-solid fa-camera text-[10px]"></i></div>`,
-                className: '',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-            L.marker([35.2245, 139.1408], { icon: scenericIcon }).addTo(map);
-
-            // 歴史アイコン: fa-landmark（一個前の神殿マーク）に完全差し戻し
-            var historyIcon = L.divIcon({
-                html: `<div class="fix-rotate w-6 h-6 rounded-full bg-amber-600/20 border border-amber-500 flex items-center justify-center text-amber-500 shadow-md shadow-amber-500/20"><i class="fa-solid fa-landmark text-[9px]"></i></div>`,
-                className: '',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-            L.marker([35.2155, 139.1378], { icon: historyIcon }).addTo(map);
-
-            var natureIcon = L.divIcon({
-                html: `<div class="fix-rotate w-6 h-6 rounded-full bg-emerald-600/20 border border-emerald-400 flex items-center justify-center text-emerald-400 shadow-md shadow-emerald-500/20"><i class="fa-solid fa-leaf text-[9px]"></i></div>`,
-                className: '',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-            L.marker([35.15786, 139.13348], { icon: natureIcon }).addTo(map);
+            // 沿線スポット（地図ピン＋カード）を SPOTS 配列から自動生成
+            renderSpotMarkers();
+            renderSpotCards();
 
             // 手動ドラッグによる自動追従一時解除機能のセットアップ
             setupMapInteractionListeners();
