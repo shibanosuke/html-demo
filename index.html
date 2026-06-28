@@ -62,6 +62,17 @@
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
+        /* 💡 地図を進行方向に回転させた際、四隅にタイル未描画の黒い三角が出るのを防ぐ。
+           表示枠(h-170)より大きく地図本体を確保し、回転してもタイルが常に枠を覆うようにする
+           （中心は表示枠中央に一致させる。スマホ幅向けに各辺220px拡張） */
+        #map.rotated-map {
+            position: absolute;
+            top: -220px;
+            left: -220px;
+            width: calc(100% + 440px);
+            height: calc(100% + 440px);
+        }
+
         /* アイコンが地図と一緒に回転して傾くのを防ぐための補正 */
         .rotated-map .leaflet-marker-icon .fix-rotate {
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
