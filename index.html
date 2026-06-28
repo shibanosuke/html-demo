@@ -26,8 +26,8 @@
                     },
                     colors: {
                         appDark: '#000000',
-                        appCard: '#111622',
-                        appBorder: '#1e2638',
+                        appCard: '#121826', /* より明瞭な色彩のためにカード背景を少し明るく調整 */
+                        appBorder: '#23304a', /* ボーダー線をくっきり見せるように調整 */
                         railBlue: '#2563eb',
                         railOrange: '#ff8c00',
                     }
@@ -86,12 +86,12 @@
     <!-- 1. 最上部ヘッダー部 -->
     <div class="bg-appDark pt-1.5 px-4 pb-1 z-20 shrink-0 select-none">
         
-        <!-- 路線名、GPS/デモ切り替えスイッチ -->
+        <!-- 1.1 路線名、GPS/デモ切り替えスイッチ -->
         <div class="flex items-center justify-between mb-1">
             <div class="flex items-center gap-1.5">
-                <!-- JTアイコン: オレンジの縁を少し太くし、文字サイズはそのままで極限まで小さく (w-[22px] h-[22px] border-2) -->
-                <div class="w-[22px] h-[22px] bg-white border-2 border-orange-500 rounded flex items-center justify-center shadow-sm shrink-0">
-                    <span class="text-appDark font-black text-[11px] font-mono tracking-tighter leading-none">JT</span>
+                <!-- JTアイコン: オレンジフチを少し太く(border-[2.5px])、外枠を文字サイズぎりぎりまでコンパクト化(w-[20px] h-[20px]) -->
+                <div class="w-[20px] h-[20px] bg-white border-[2.5px] border-orange-500 rounded flex items-center justify-center shadow-sm shrink-0">
+                    <span class="text-appDark font-black text-[10px] font-mono tracking-tighter leading-none">JT</span>
                 </div>
                 <h1 class="text-[13px] font-black tracking-wide text-white">東海道線（JR東日本）</h1>
             </div>
@@ -107,7 +107,7 @@
             </div>
         </div>
 
-        <!-- 全体距離・進捗プログレスバー -->
+        <!-- 1.2 全体距離・進捗プログレスバー -->
         <div class="relative w-full h-1 bg-slate-800 rounded-full mb-1 mt-1.5">
             <div id="ui-main-progress" class="absolute h-full bg-railBlue rounded-full" style="width: 0%;"></div>
             <div id="ui-progress-dot" class="absolute w-2.5 h-2.5 bg-white rounded-full top-1/2 -translate-y-1/2 shadow-[0_0_6px_#fff]" style="left: 0%;"></div>
@@ -124,7 +124,7 @@
             </div>
         </div>
 
-        <!-- 駅切り替え表示部 (前駅左寄せ・次駅右寄せのシンプルな元の配置へ復旧) -->
+        <!-- 1.3 駅切り替え表示部 (前駅左寄せ・次駅右寄せの使いやすい元の左右スプリット配置へ復旧) -->
         <div id="ui-station-header-container" class="pt-2 pb-1 min-h-[48px] flex items-center w-full">
             <!-- デフォルト状態: 駅間走行表示（元の使いやすい左右寄せ配置） -->
             <div id="header-running-view" class="flex justify-between items-center w-full">
@@ -146,37 +146,36 @@
                 </div>
             </div>
 
-            <!-- 到着時状態: 1駅特化＋解説スライダー (元の左右寄せを崩さず、停車中などの文字を消してシンプルに) -->
+            <!-- 到着時状態: 1駅特化＋解説スライダー (「●停車中」表示を廃止し、左側を少し縮小して駅紹介を左側に大きく拡大) -->
             <div id="header-stopped-view" class="hidden justify-between items-center w-full">
-                <!-- 現在停車中の駅名表示 (左寄せ左揃え・停車中の文言は非表示) -->
-                <div class="flex flex-col items-start w-[45%]">
+                <!-- 現在停車中の駅名表示 (左揃え・停車中の文言は消去・横幅を縮めて見切れを完全解消) -->
+                <div class="flex flex-col items-start w-[35%] shrink-0 pr-2">
                     <span id="ui-current-rubi" class="text-[8px] text-slate-400 font-medium tracking-wider text-left">とうきょう</span>
-                    <h2 id="ui-current-name" class="text-xl font-black text-white tracking-tight text-left truncate w-full">東京</h2>
+                    <h2 id="ui-current-name" class="text-xl font-black text-white tracking-tight text-left truncate w-full leading-tight">東京</h2>
                     <span id="ui-current-id" class="text-[9px] text-slate-500 font-mono font-bold text-left">JT-01</span>
                 </div>
-                <!-- 右：駅のプチ紹介カード (右寄せ。駅間レイアウトの右側エリアに美しく収まるデザイン) -->
-                <div class="w-[50%] bg-slate-900 border border-railOrange/30 rounded-lg p-1.5 flex flex-col justify-center h-[42px] overflow-hidden">
-                    <span class="text-[8px] text-railOrange font-bold flex items-center gap-1"><i class="fa-solid fa-train-subway"></i>駅のご紹介</span>
-                    <p id="ui-station-intro" class="text-[9px] text-slate-200 leading-snug mt-0.5 line-clamp-2">日本の起点となる赤レンガ造りの歴史的ターミナル駅。</p>
+                <!-- 右：駅紹介カード (「駅のごご紹介」見出しとアイコンを全廃してすっきりさせ、左側に大きく拡大) -->
+                <div class="flex-grow bg-slate-900 border border-railOrange/35 rounded-lg p-1.5 flex flex-col justify-center h-[42px] overflow-hidden">
+                    <p id="ui-station-intro" class="text-[9.5px] text-slate-100 leading-snug line-clamp-2 font-medium">日本の起点となる赤レンガ造りの歴史的ターミナル駅。</p>
                 </div>
             </div>
         </div>
 
-        <!-- 3連ステータスカード (改善前のように1行目にタイトル、2行目に内容の配置。高さは極限まで短縮) -->
+        <!-- 1.4 3連ステータスカード (1行目にタイトル、2行目に内容の配置。高さは極限まで短縮) -->
         <div class="grid grid-cols-12 gap-1.5 mt-1">
             <!-- 現在地カード -->
-            <div class="col-span-6 bg-appCard border border-appBorder rounded-lg px-1.5 py-0.5 flex flex-col justify-center items-center text-center h-[32px]">
-                <span class="text-[8px] text-slate-400 font-medium flex items-center gap-0.5 leading-none"><i class="fa-solid fa-location-dot text-slate-500"></i>現在地</span>
+            <div class="col-span-6 bg-appCard border border-appBorder rounded-lg px-1.5 py-0.5 flex flex-col justify-center items-center text-center h-[30px]">
+                <span class="text-[7.5px] text-slate-400 font-medium flex items-center gap-0.5 leading-none"><i class="fa-solid fa-location-dot text-slate-500"></i>現在地</span>
                 <div id="ui-city-name" class="text-[9px] font-black text-slate-100 whitespace-nowrap overflow-hidden text-ellipsis w-full mt-0.5 leading-none">東京都千代田区</div>
             </div>
             <!-- 速度カード -->
-            <div class="col-span-3 bg-appCard border border-appBorder rounded-lg px-1.5 py-0.5 flex flex-col justify-center items-center text-center h-[32px]">
-                <span class="text-[8px] text-slate-400 font-medium flex items-center gap-0.5 leading-none"><i class="fa-solid fa-gauge-high text-slate-500"></i>速度</span>
-                <div class="text-[10px] font-mono font-black text-slate-100 mt-0.5 leading-none"><span id="ui-speed">0</span><span class="text-[8px] font-sans font-normal text-slate-400 ml-0.5">km</span></div>
+            <div class="col-span-3 bg-appCard border border-appBorder rounded-lg px-1.5 py-0.5 flex flex-col justify-center items-center text-center h-[30px]">
+                <span class="text-[7.5px] text-slate-400 font-medium flex items-center gap-0.5 leading-none"><i class="fa-solid fa-gauge-high text-slate-500"></i>速度</span>
+                <div class="text-[9px] font-mono font-black text-slate-100 mt-0.5 leading-none"><span id="ui-speed">0</span><span class="text-[7.5px] font-sans font-normal text-slate-400 ml-0.5">km</span></div>
             </div>
             <!-- GPSカード -->
-            <div class="col-span-3 bg-appCard border border-appBorder rounded-lg px-1.5 py-0.5 flex flex-col justify-center items-center text-center h-[32px]">
-                <span class="text-[8px] text-slate-400 font-medium flex items-center gap-0.5 leading-none"><i class="fa-solid fa-satellite-dish text-slate-500"></i>GPS</span>
+            <div class="col-span-3 bg-appCard border border-appBorder rounded-lg px-1.5 py-0.5 flex flex-col justify-center items-center text-center h-[30px]">
+                <span class="text-[7.5px] text-slate-400 font-medium flex items-center gap-0.5 leading-none"><i class="fa-solid fa-satellite-dish text-slate-500"></i>GPS</span>
                 <div id="ui-gps-badge" class="text-[8px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-1 rounded w-full mt-0.5 text-center leading-none">デモ</div>
             </div>
         </div>
@@ -200,10 +199,10 @@
             <span class="text-[9px] text-blue-400 font-mono font-bold shrink-0" id="demo-km-label">0.0km</span>
         </div>
 
-        <!-- 進行方向インジケータ兼「現在地追従復帰ボタン」 -->
+        <!-- 進行方向インジケータ兼「現在地追従復帰ボタン」 (右下のナビ矢印マークが常に真上を指すように、アイコン自体の向きを補正) -->
         <button id="compass-indicator" onclick="resetMapTracking()" class="absolute bottom-2 right-2 z-[1000] bg-slate-900/90 border border-slate-700 hover:border-railOrange w-8 h-8 rounded-lg flex items-center justify-center text-railOrange shadow-md transition-all active:scale-90" title="現在地に戻す">
-            <span id="compass-icon-wrapper" class="transition-transform duration-300">
-                <i class="fa-solid fa-location-arrow text-xs" style="transform: rotate(-45deg);"></i>
+            <span id="compass-icon-wrapper" class="transform -rotate-45" style="display: inline-block;">
+                <i class="fa-solid fa-location-arrow text-xs"></i>
             </span>
             <span id="tracking-warning-pulse" class="absolute inset-0 rounded-lg border border-railOrange animate-ping opacity-0"></span>
         </button>
@@ -212,28 +211,28 @@
     <!-- 3. 下部エリア -->
     <div class="flex-grow flex flex-col overflow-hidden bg-gradient-to-b from-appDark to-[#05080e] pb-1.5 space-y-2">
         
-        <!-- 沿線スポットセクション (横スクロール。左側見切れを px-4 で補正) -->
+        <!-- 沿線スポットセクション (横スクロール。不透明度を80%に向上させ、色合いを格段にはっきりクッキリと調整) -->
         <div class="shrink-0 pt-2">
             <div id="scenic-card-container" class="flex gap-2.5 overflow-x-auto px-4 pb-1 no-scrollbar snap-x scroll-smooth">
                 
                 <!-- 景観カテゴリ: 馬入川 -->
-                <div id="card-banyu" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-50 relative group">
+                <div id="card-banyu" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
                     <div class="flex flex-col h-full justify-between">
                         <div>
                             <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">61.5km</span>
+                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">61.5km</span>
                                 <span class="text-[9px] text-indigo-400 font-bold flex items-center gap-1">
-                                    <i class="fa-solid fa-bridge-water"></i> 建造物
+                                    <i class="fa-solid fa-bridge-water text-indigo-400"></i> 建造物
                                 </span>
                             </div>
                             <h4 class="text-xs font-black text-white mt-1.5">相模川橋梁（旧馬入川橋）</h4>
-                            <p class="text-[9px] text-slate-400 mt-0.5 leading-normal" id="desc-banyu-short">大正関東大震災の遺跡として残る旧橋脚。歴史的な鋼材デザインが特徴的です。</p>
+                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-banyu-short">大正関東大震災 of 旧橋脚。歴史的な鋼材デザインが特徴的です。</p>
                             <!-- 詳細テキスト -->
                             <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-banyu-detail">
                                 大正12年の関東大震災時に、地盤の液状化などにより一部の橋脚が倒壊、傾斜しました。近代建造物の災害遺構としてきわめて貴重であり、国の史跡に指定されています。
                             </p>
                         </div>
-                        <!-- 詳細ボタン: 虫眼鏡から縦並び三角（caret）アイコンに変更 -->
+                        <!-- 詳細ボタン: caret-down（三角印）に変更 -->
                         <button onclick="toggleCardDetails('banyu')" class="mt-2 text-left text-[8px] text-indigo-400 font-bold flex items-center gap-1 hover:text-indigo-300">
                             <i class="fa-solid fa-caret-down" id="icon-banyu"></i> <span id="label-banyu">詳細を見る</span>
                         </button>
@@ -241,23 +240,23 @@
                 </div>
 
                 <!-- 景観カテゴリ: ねぶはや -->
-                <div id="card-nebu" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-50 relative group">
+                <div id="card-nebu" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
                     <div class="flex flex-col h-full justify-between">
                         <div>
                             <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">87.1km</span>
+                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded">87.1km</span>
                                 <span class="text-[9px] text-sky-400 font-bold flex items-center gap-1">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg class="w-3 h-3 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                                         <circle cx="12" cy="13" r="4" />
                                     </svg> 景観
                                 </span>
                             </div>
                             <h4 class="text-xs font-black text-white mt-1.5">「ねぶはや」絶景区間</h4>
-                            <p class="text-[9px] text-slate-400 mt-0.5 leading-normal" id="desc-nebu-short">早川〜根府川間で相模湾が一望できる、東海道線屈指の美しさを誇る車窓風景。</p>
+                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-nebu-short">早川〜根府川間で相模湾が一望できる、東海道線屈指の美しさを誇る車窓風景。</p>
                             <!-- 詳細テキスト -->
                             <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-nebu-detail">
-                                車窓いっぱいに広がるコバルトブルーの相模湾、遠くに見える伊豆半島や大島。列車内からしか出会うことのできない「まるで映画のワンシーン」のような特別な青いパノラマです。
+                                車窓いっぱいに広がるコバルトブルーの相模湾、遠くに見える伊豆半島や大島。列車内からしか出会うことのできない特別な青いパノラマです。
                             </p>
                         </div>
                         <button onclick="toggleCardDetails('nebu')" class="mt-2 text-left text-[8px] text-sky-400 font-bold flex items-center gap-1 hover:text-sky-300">
@@ -266,21 +265,21 @@
                     </div>
                 </div>
 
-                <!-- 歴史カテゴリ: 石橋山 (歴史アイコンをわかりやすいfa-landmarkに変更) -->
-                <div id="card-ishi" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-50 relative group">
+                <!-- 歴史カテゴリ: 石橋山 (歴史アイコンを分かりやすい神殿マーク fa-landmark に差し戻し) -->
+                <div id="card-ishi" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
                     <div class="flex flex-col h-full justify-between">
                         <div>
                             <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">88.0km</span>
+                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">88.0km</span>
                                 <span class="text-[9px] text-amber-500 font-bold flex items-center gap-1">
                                     <i class="fa-solid fa-landmark text-amber-500"></i> 歴史
                                 </span>
                             </div>
                             <h4 class="text-xs font-black text-white mt-1.5">石橋山古戦場</h4>
-                            <p class="text-[9px] text-slate-400 mt-0.5 leading-normal" id="desc-ishi-short">1180年、源頼朝が挙兵直後に平家軍と激突し大敗した地。車窓右手に歴史が眠ります。</p>
+                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-ishi-short">1180年、源頼朝が挙兵直後に平家軍と激突し大敗した地。車窓右手に歴史が眠ります。</p>
                             <!-- 詳細テキスト -->
                             <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-ishi-detail">
-                                挙兵間もない頼朝の寡兵300に対し、大庭景親率いる平家軍3000が夜陰に乗じて急襲。九死に一生を得た頼朝は、付近のしとどの窟に隠れて難を逃れたのち、房総へと脱出して再起を果たしました。
+                                挙兵間もない頼朝の寡兵300に対し、大庭景親率いる平家軍3000が夜陰に乗じて急襲。頼朝は付近のしとどの窟に隠れて難を逃れたのち、房総へと脱出して再起を果たしました。
                             </p>
                         </div>
                         <button onclick="toggleCardDetails('ishi')" class="mt-2 text-left text-[8px] text-amber-500 font-bold flex items-center gap-1 hover:text-amber-400">
@@ -290,20 +289,20 @@
                 </div>
 
                 <!-- 自然カテゴリ: 湯河原 -->
-                <div id="card-yugawara" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-50 relative group">
+                <div id="card-yugawara" class="snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40">
                     <div class="flex flex-col h-full justify-between">
                         <div>
                             <div class="flex justify-between items-center">
-                                <span class="text-[9px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">95.5km</span>
+                                <span class="text-[9px] font-bold text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">95.5km</span>
                                 <span class="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg class="w-3 h-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 5.5a7 7 0 0 1-13.9 3.5" />
                                         <path d="M9 22v-4" />
                                     </svg> 自然
                                 </span>
                             </div>
                             <h4 class="text-xs font-black text-white mt-1.5">湯河原万葉の自然</h4>
-                            <p class="text-[9px] text-slate-400 mt-0.5 leading-normal" id="desc-yugawara-short">万葉集にも詠まれた名湯地。箱根山系のふもとを巡る緑豊かな景色です。</p>
+                            <p class="text-[9px] text-slate-300 mt-0.5 leading-normal" id="desc-yugawara-short">万葉集にも詠まれた名湯地。箱根山系のふもとを巡る緑豊かな景色です。</p>
                             <!-- 詳細テキスト -->
                             <p class="text-[9px] text-slate-300 mt-1 leading-normal hidden border-t border-slate-800 pt-1" id="desc-yugawara-detail">
                                 古くから万葉の歌人に愛され、温泉の湯けむりと相模湾の温暖な海風が心地よく重なり合う風光明媚な谷あい。車窓からは箱根外輪山へと緩やかに連なる斜面のみかん畑が鮮やかに望めます。
@@ -317,8 +316,8 @@
 
             </div>
 
-            <!-- 💡 詳細を一括でしまえる一括格納バー (文字はシンプルに「折りたたむ」のみ、アイコンをcaret-upに変更) -->
-            <div id="collapse-all-bar" class="hidden justify-center items-center py-1.5 px-4 cursor-pointer hover:bg-slate-900/50 transition-all border-b border-appBorder" onclick="collapseAllScenicCards()">
+            <!-- 💡 詳細を一括でしまえる一括格納バー (文字は「折りたたむ」のみ、アイコンは逆三角caret-up) -->
+            <div id="collapse-all-bar" class="hidden justify-center items-center py-1 cursor-pointer hover:bg-slate-900/50 transition-all border-b border-appBorder" onclick="collapseAllScenicCards()">
                 <div class="flex items-center gap-1.5 text-[9px] text-slate-400 font-bold">
                     <span class="w-12 h-[1px] bg-slate-800"></span>
                     <i class="fa-solid fa-caret-up text-[11px] text-railOrange"></i>
@@ -328,17 +327,17 @@
             </div>
         </div>
 
-        <!-- 4. 停車駅タイムライン (「停車駅・到着予想」テキストは完全撤去) -->
+        <!-- 4. 停車駅タイムライン -->
         <div class="flex-grow flex flex-col min-h-0 px-4">
             <!-- タイムラインコンテナ -->
             <div class="flex-grow overflow-y-auto pr-1 relative no-scrollbar" id="station-timeline-container">
                 <div class="relative py-1" id="station-timeline">
                     
-                    <!-- 縦線ライン (左位置のズレを完璧に調整して left-[16px] に配置) -->
-                    <div class="absolute left-[16px] top-0 bottom-0 w-[2px] bg-slate-800 z-0"></div>
+                    <!-- 縦線ライン (左位置のズレを完璧に調整して left-[12px] に配置し、現在地マークと完璧に直結させます) -->
+                    <div class="absolute left-[12px] top-0 bottom-0 w-[2px] bg-slate-800 z-0"></div>
 
                     <!-- 21駅リストコンテナ -->
-                    <div id="timeline-stations" class="space-y-2"></div> <!-- space-y-2.5 から 2に狭めて駅間距離をさらに緊縮 -->
+                    <div id="timeline-stations" class="space-y-1.5"></div>
 
                 </div>
             </div>
@@ -361,19 +360,19 @@
             { id: "JT-03", name: "品川", rubi: "しながわ", km: 6.6, coords: [35.630428, 139.739096], city: "東京都港区", intro: "旧宿場町から発展を続け、現在はリニア新幹線なども入る最先端メガターミナル。" },
             { id: "JT-04", name: "川崎", rubi: "かわさき", km: 18.5, coords: [35.531356, 139.696833], city: "神奈川県川崎市", intro: "工業地帯の発展を支えた拠点。現在は巨大ショッピングモール等が並ぶ活気ある駅。" },
             { id: "JT-05", name: "横浜", rubi: "よこはま", km: 28.8, coords: [35.465825, 139.622257], city: "神奈川県横浜市", intro: "世界的な乗降客数を誇る一大連絡口。みなとみらいや中華街への最寄り。" },
-            { id: "JT-06", name: "戸塚", rubi: "とつか", km: 40.9, coords: [35.400124, 139.534414], city: "神奈川県横浜市", intro: "東海道五十三次第5 of 宿場町。湘南モノレール等と交差するベッドタウン。" },
+            { id: "JT-06", name: "戸塚", rubi: "とつか", km: 40.9, coords: [35.400124, 139.534414], city: "神奈川県横浜市", intro: "東海道五十三次第5の宿場町。湘南モノレール等と交差するベッドタウン。" },
             { id: "JT-07", name: "大船", rubi: "おおふな", km: 46.3, coords: [35.353823, 139.531013], city: "神奈川県鎌倉市", intro: "巨大な白亜の「大船観音」が有名。横須賀線、湘南モノレールのジャンクション。" },
             { id: "JT-08", name: "藤沢", rubi: "ふじさわ", km: 51.1, coords: [35.338851, 139.487104], city: "神奈川県藤沢市", intro: "湘南エリアの代表的中心都市。江ノ島電鉄（江ノ電）への乗り換え駅。" },
             { id: "JT-09", name: "辻堂", rubi: "つじどう", km: 54.7, coords: [35.336934, 139.447489], city: "神奈川県藤沢市", intro: "広大な「湘南テラスモール」が広がり、ファミリー層に圧倒的人気を博す再開発駅。" },
             { id: "JT-10", name: "茅ケ崎", rubi: "ちがさき", km: 58.4, coords: [35.330426, 139.407386], city: "神奈川県茅ヶ崎市", intro: "海風とサーフィン、サザンオールスターズのメロディーが響く湘南カルチャーの街。" },
             { id: "JT-11", name: "平塚", rubi: "ひらつか", km: 63.5, coords: [35.328326, 139.353738], city: "神奈川県平塚市", intro: "絢爛豪華な「湘南ひらつか七夕まつり」で知られ、かつての相模国中心部としての風格を持つ。" },
             { id: "JT-12", name: "大磯", rubi: "おおいそ", km: 67.6, coords: [35.311694, 139.313619], city: "神奈川県中郡大磯町", intro: "初代総理大臣・伊藤博文など多くの明治の元勲たちが別荘を構えた瀟洒な避暑の地。" },
-            { id: "JT-13", name: "二宮", rubi: "にのみや", km: 72.8, coords: [35.299426, 139.258645], city: "神奈川県中郡二宮町", intro: "吾妻山公園から望む早咲きの菜の華と、遮るもののない富士山の山影が絶景。" },
-            { id: "JT-14", name: "国府津", rubi: "こうづ", km: 77.3, coords: [35.281431, 139.215217], city: "神奈川県小田原市", intro: "かつて御殿場線経由だった時代、すべての優等列車が補助機関車を連結した鉄道の歴史の要衝。" },
+            { id: "JT-13", name: "二宮", rubi: "にのみや", km: 72.8, coords: [35.299426, 139.258645], city: "神奈川県中郡二宮町", intro: "吾妻山公園から望む早咲きの菜の花と、遮るもののない富士山の山影が絶景。" },
+            { id: "JT-14", name: "国府津", rubi: "こうづ", km: 77.3, coords: [35.281431, 139.215217], city: "神奈川県小田原市", intro: "御殿場線経由だった時代、すべての優等列車が補助機関車を連結した鉄道の要衝。" },
             { id: "JT-15", name: "鴨宮", rubi: "かのみや", km: 80.3, coords: [35.276053, 139.182162], city: "神奈川県小田原市", intro: "新幹線の歴史が始まった場所。「新幹線発祥の地」記念碑が静かに佇みます。" },
             { id: "JT-16", name: "小田原", rubi: "おだわら", km: 83.8, coords: [35.255788, 139.155565], city: "神奈川県小田原市", intro: "天下の険・箱根の玄関口。かつて小田原北条氏が誇った難攻不落の名城が鎮座。" },
             { id: "JT-17", name: "早川", rubi: "はやかわ", km: 86.4, coords: [35.234547, 139.142652], city: "神奈川県小田原市", intro: "日本で一番駅から近い漁港「小田原早川漁港」があり、朝市の鮮魚グルメが絶品。" },
-            { id: "JT-18", name: "根府川", rubi: "ねぶかわ", km: 90.2, coords: [35.20245, 139.138513], city: "神奈川県小田原市", intro: "東海道線内で唯一の完全な無人駅。崖の上に建つ木造ホームから望む太平洋は筆舌に尽くしがたい美しさ。" },
+            { id: "JT-18", name: "根府川", rubi: "ねぶかわ", km: 90.2, coords: [35.20245, 139.138513], city: "神奈川県小田原市", intro: "崖の上から太平洋を一望する完全無人駅。車窓を染める青い水平線が美しい。" },
             { id: "JT-19", name: "真鶴", rubi: "まなづる", km: 95.7, coords: [35.156358, 139.131653], city: "神奈川県足柄下郡真鶴町", intro: "原生林が美しい真鶴半島への入口。美味しい地魚料理や良質な小松石で有名。" },
             { id: "JT-20", name: "湯河原", rubi: "ゆがわら", km: 98.9, coords: [35.146152, 139.102233], city: "神奈川県足柄下郡湯河原町", intro: "古くは夏目漱石などの文豪が逗留し執筆に耽った、静寂あふれる名門温泉の温泉街。" },
             { id: "JT-21", name: "熱海", rubi: "あたみ", km: 104.6, coords: [35.10374, 139.078057], city: "静岡県熱海市", intro: "昭和の熱気と令和の最先端観光が見事に融合した、相模湾にそそり立つ大温泉都市。" }
@@ -440,7 +439,7 @@
             { lat: 35.48558, lng: 139.65049, km: 25.29 },
             { lat: 35.48546, lng: 139.64819, km: 25.498 },
             { lat: 35.48509, lng: 139.64524, km: 25.768 },
-            { lat: 35.48317, lng: 139.6389, km: 26.38 },
+            { lat: 35.48317, lng: 139.638, km: 26.38 },
             { lat: 35.48229, lng: 139.63715, km: 26.566 },
             { lat: 35.48097, lng: 139.63575, km: 26.76 },
             { lat: 35.47388, lng: 139.6292, km: 27.746 },
@@ -689,20 +688,20 @@
             stations.forEach(function(station, index) {
                 html += `
                     <div id="station-${station.id}" class="station-row relative flex items-center justify-between h-4 opacity-35 transition-all duration-300">
-                        <!-- left-[16px] で縦線軸と絶対同調。現在地ドットとピッタリ重なります -->
-                        <div class="absolute left-[16px] -translate-x-1/2 w-2 h-2 rounded-full bg-slate-700 z-10 border border-appDark"></div>
+                        <!-- left-[12px] で縦線軸と絶対同調。現在地ドットとピッタリ重ねます -->
+                        <div class="absolute left-[12px] -translate-x-1/2 w-2 h-2 rounded-full bg-slate-700 z-10 border border-appDark"></div>
                         <span class="station-name text-slate-300 font-bold text-xs pl-8">${station.name}</span>
                         <span class="font-mono text-[9px] text-slate-500">${station.km.toFixed(1)}km</span>
                     </div>
                 `;
                 
-                // 下部現在地表示（脈動するナビ矢印）をタイムラインの間に復活
+                // 駅間ナビ矢印（進行中の脈動表示。left-[12px] にぴったり配置して左ずれを解消）
                 if (index < stations.length - 1) {
                     var nextStation = stations[index + 1];
                     html += `
                         <div id="section-${station.id}-${nextStation.id}" class="section-row relative hidden items-center h-4 my-0.5 transition-all duration-300">
-                            <!-- 縦線ラインの軸（left-[16px]）と寸分狂わず連動 -->
-                            <div class="absolute left-[16px] -translate-x-1/2 w-4 h-4 flex items-center justify-center z-10 current-location-pulse">
+                            <!-- 縦線軸（left-[12px]）と完璧に同調させてズレを排除 -->
+                            <div class="absolute left-[12px] -translate-x-1/2 w-4 h-4 flex items-center justify-center z-10 current-location-pulse">
                                 <i class="fa-solid fa-location-arrow text-railBlue text-[9px] rotate-[135deg]"></i>
                             </div>
                         </div>
@@ -923,15 +922,9 @@
                 if (!isMapUserInteracting) {
                     map.setView(coords, map.getZoom(), { animate: false });
                 }
-                
-                // コンパス方位角の更新
-                var compass = document.getElementById("compass-icon-wrapper");
-                if (compass) {
-                    compass.style.transform = `rotate(${-bearing + 45}deg)`;
-                }
             }
 
-            // 景観スポット自動スライドハイライト
+            // 景観スポット自動スライドハバーサインハイライト
             var spots = [
                 { id: "card-banyu", targetKm: 61.5 },
                 { id: "card-nebu", targetKm: 87.1 },
@@ -951,11 +944,12 @@
                         closestSpotId = spot.id;
                     }
 
-                    // スポットの前後2.5km内に接近したら自動的に枠線を光らせる
+                    // スポットの前後2.5km内に接近したら、明瞭でくっきりした境界線カラーで光らせる(薄暗さを全廃)
                     if (diff < 2.5) {
-                        card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-blue-500 rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 scale-[1.02] opacity-100 relative group";
+                        card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-blue-500 rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 scale-[1.02] opacity-100 relative group shadow-[0_0_12px_rgba(59,130,246,0.3)]";
                     } else {
-                        card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-50 relative group";
+                        // 非接近中も opacity-80 でくすみ・薄暗さを排除し非常にクリアに見えるよう補正
+                        card.className = "snap-center shrink-0 w-[210px] bg-appCard border border-appBorder rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 opacity-80 relative group shadow-md shadow-slate-950/40";
                     }
                 }
             });
@@ -975,12 +969,19 @@
                 }
             }
 
-            // 停車駅タイムラインの同期
+            // 💡 停車駅タイムラインの同期＆ズレ・停車時の丸ドットへの重ね合わせ処理
             document.querySelectorAll(".station-row").forEach(function(el) { 
                 el.classList.add("opacity-35");
                 el.classList.remove("opacity-60", "opacity-100");
                 var nameEl = el.querySelector(".station-name");
                 if (nameEl) nameEl.className = "station-name text-slate-300 font-bold text-xs pl-8";
+                
+                // 丸ドットを元のデフォルト状態にリセット
+                var dot = el.querySelector(".absolute.left-\\[12px\\]");
+                if (dot) {
+                    dot.className = "absolute left-[12px] -translate-x-1/2 w-2 h-2 rounded-full bg-slate-700 z-10 border border-appDark";
+                    dot.innerHTML = "";
+                }
             });
             document.querySelectorAll(".section-row").forEach(function(el) { el.classList.add("hidden"); });
 
@@ -992,8 +993,19 @@
                 }
             });
 
-            // 下部現在地表示（脈動するナビ矢印）のタイムライン同期
-            if (!stoppedAtStation) {
+            // 停車時は該当駅の●の部分の真上に現在地マーク（ナビ矢印）を配置する処理
+            if (stoppedAtStation) {
+                var row = document.getElementById(`station-${stoppedAtStation.id}`);
+                if (row) {
+                    var dot = row.querySelector(".absolute.left-\\[12px\\]");
+                    if (dot) {
+                        // 丸ドット自体を脈動するナビ矢印に綺麗に置換して、ズレなく「ドットの真上」に表示
+                        dot.className = "absolute left-[12px] -translate-x-1/2 w-4 h-4 flex items-center justify-center z-10 current-location-pulse";
+                        dot.innerHTML = `<i class="fa-solid fa-location-arrow text-railBlue text-[9px] rotate-[135deg]"></i>`;
+                    }
+                }
+            } else {
+                // 走行中は駅間のセクションに完璧にナビ矢印を表示
                 var activeSection = document.getElementById(`section-${prevStation.id}-${nextStation.id}`);
                 if (activeSection) {
                     activeSection.classList.remove("hidden");
@@ -1035,7 +1047,7 @@
             }
         }
 
-        // 💡 スポット個別カードの詳細表示切替 (トグル、矢印アイコン変更)
+        // 💡 スポット個別カードの詳細表示切替 (縦方向にのみスッと伸びるよう、横幅変更ロジックを完全に排除)
         function toggleCardDetails(id) {
             var shortDesc = document.getElementById(`desc-${id}-short`);
             var detailDesc = document.getElementById(`desc-${id}-detail`);
@@ -1049,8 +1061,8 @@
                 if (shortDesc) shortDesc.classList.add("hidden");
                 label.innerText = "折りたたむ";
                 icon.className = "fa-solid fa-caret-up"; // caret-upに修正
-                card.classList.remove("w-[210px]");
-                card.classList.add("w-[260px]");
+                
+                // 横幅の変更クラス操作をすべて削除。w-[210px]のまま縦方向のみ綺麗に伸縮します
 
                 // 一括格納バーを表示
                 document.getElementById("collapse-all-bar").classList.remove("hidden");
@@ -1061,8 +1073,8 @@
                 if (shortDesc) shortDesc.classList.remove("hidden");
                 label.innerText = "詳細を見る";
                 icon.className = "fa-solid fa-caret-down"; // caret-downに修正
-                card.classList.remove("w-[260px]");
-                card.classList.add("w-[210px]");
+                
+                // 横幅の変更クラス操作をすべて削除
 
                 checkAnyCardExpanded();
             }
@@ -1079,7 +1091,7 @@
             }
         }
 
-        // すべてのスポットカードを格納する
+        // すべてのスポットカードを縦方向に折りたたんで格納する
         function collapseAllScenicCards() {
             var spots = ["banyu", "nebu", "ishi", "yugawara"];
             spots.forEach(function(id) {
@@ -1087,15 +1099,12 @@
                 var detailDesc = document.getElementById(`desc-${id}-detail`);
                 var label = document.getElementById(`label-${id}`);
                 var icon = document.getElementById(`icon-${id}`);
-                var card = document.getElementById(`card-${id}`);
 
                 if (detailDesc && !detailDesc.classList.contains("hidden")) {
                     detailDesc.classList.add("hidden");
                     if (shortDesc) shortDesc.classList.remove("hidden");
                     label.innerText = "詳細を見る";
                     icon.className = "fa-solid fa-caret-down";
-                    card.classList.remove("w-[260px]");
-                    card.classList.add("w-[210px]");
                 }
             });
 
@@ -1150,12 +1159,11 @@
             }
         }
 
-        // 💡 追従解除した地図を、再び現在地に吸着させて回転をリセットする機能
+        // 💡 追従解除した地図を、再び現在地に吸着させて回転をリセットする機能 (トースト通知は不要のため削除)
         function resetMapTracking() {
             if (!map) return;
             
             triggerUserInteraction(false);
-            showToast("現在地に再吸着しました");
 
             // 最新のKMから座標と角度を取得してセット
             var state = getCoordsByKm(currentKm);
@@ -1233,10 +1241,10 @@
                             errorMsg = "位置が検出できません。";
                             break;
                         case error.TIMEOUT:
-                            errorMsg = "タイムアウトしました。";
+                            errorMsg = "位置情報の取得中にタイムアウトしました。";
                             break;
                     }
-                    showToast(errorMsg + " デモに戻ります。", "error");
+                    showToast(errorMsg + " デモモードに切り替えます。", "error");
                     setMode("demo");
                 },
                 {
@@ -1356,7 +1364,7 @@
             });
             L.marker([35.2245, 139.1408], { icon: scenericIcon }).addTo(map);
 
-            // 歴史アイコン: fa-landmarkに変更
+            // 歴史アイコン: fa-landmark（一個前の神殿マーク）に完全差し戻し
             var historyIcon = L.divIcon({
                 html: `<div class="fix-rotate w-6 h-6 rounded-full bg-amber-600/20 border border-amber-500 flex items-center justify-center text-amber-500 shadow-md shadow-amber-500/20"><i class="fa-solid fa-landmark text-[9px]"></i></div>`,
                 className: '',
