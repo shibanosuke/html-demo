@@ -64,22 +64,17 @@
             z-index: 1000;
         }
 
-        /* 進行方向を上にするための回転は #map コンテナ自体にかける（下記）。
-           Leaflet 内部の .leaflet-map-pane には回転をかけない＝ドラッグ/ズーム時の translate と衝突しない */
-        #map.rotated-map {
-            transform-origin: center center;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        /* 💡 地図を進行方向に回転させた際、四隅にタイル未描画の黒い三角が出るのを防ぐ。
-           表示枠(h-170)より大きく地図本体を確保し、回転してもタイルが常に枠を覆うようにする
-           （中心は表示枠中央に一致させる。スマホ幅向けに各辺220px拡張） */
-        #map.rotated-map {
+        /* 進行方向を上にするための回転は #map-rotator（Leaflet外の素のラッパー）にかける。
+           Leaflet本体(#map)には transform を当てない＝内部描画/ドラッグと干渉しない。
+           表示枠より各辺220px大きく確保し、回転しても四隅にタイル未描画の黒三角が出ないようにする。 */
+        #map-rotator {
             position: absolute;
             top: -220px;
             left: -220px;
             width: calc(100% + 440px);
             height: calc(100% + 440px);
+            transform-origin: center center;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         /* アイコンが地図と一緒に回転して傾くのを防ぐための補正 */
@@ -208,7 +203,10 @@
 
     <!-- 2. 地図ビュー (デモ操作フローティング + 手動操作対応) -->
     <div class="relative h-[170px] w-full z-10 border-y border-appBorder overflow-hidden shrink-0">
-        <div id="map" class="w-full h-full bg-slate-950 rotated-map"></div>
+        <!-- 回転は専用ラッパー(#map-rotator)にかける。Leaflet本体(#map)には transform を当てないことで内部描画と干渉させない -->
+        <div id="map-rotator">
+            <div id="map" class="w-full h-full bg-slate-950 rotated-map"></div>
+        </div>
         <div class="map-shadow absolute inset-0"></div>
         
         <!-- フローティングデモコントローラー -->
@@ -610,6 +608,14 @@
         var gpsOfflineNotified = false;     // 沿線外トーストの多重表示防止
         var lastBearing = 180;              // 直近の進行方位（停車中の方位ブレ防止に据え置き）
         var MOVING_SPEED_MIN = 3;           // km/h 未満は静止扱い（GPS時のみ方位を更新しない）
+        // 💡 地図を「進行方向＝上」に回すか。false なら常に北が上（通常の地図表示）。
+        //    東海道線は南へ進むため heading-up にすると北が下＝逆さまに見えるので、既定は北上にしている。
+        var MAP_HEADING_UP = false;
+        // 💡 実際の現在地の市区町村（リバースジオコーディング結果）。負荷軽減のためスロットルしてキャッシュ
+        var geocodedCity = null;            // 取得済みの市区町村ラベル
+        var geocodeLatLng = null;           // それを取得した地点
+        var geocodeAt = 0;                  // 最終取得時刻(ms)
+        var geocodePending = false;         // 取得中フラグ
 
         // トースト通知システム
         function showToast(message, type = "info") {
@@ -738,7 +744,45 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
-        // ベクトル投影
+        // 💡 実際の現在地の市区町村を取得（OpenStreetMap Nominatim リバースジオコーディング）
+        //    ・移動250m未満かつ前回から8秒未満ならスキップ（公開APIへの負荷軽減＝1req/s制限を順守）
+        //    ・成功したら geocodedCity を更新。失敗・オフライン時は駅ベースの近似表示にフォールバック
+        function updateCityFromCoords(lat, lng) {
+            if (typeof fetch !== "function") return;
+            if (!isFinite(lat) || !isFinite(lng)) return;
+            var now = Date.now();
+            if (geocodeLatLng) {
+                var moved = getDistance(lat, lng, geocodeLatLng[0], geocodeLatLng[1]);
+                if (moved < 250 && (now - geocodeAt) < 8000) return;
+            }
+            if (geocodePending && (now - geocodeAt) < 8000) return;
+            geocodePending = true;
+            geocodeAt = now;
+            geocodeLatLng = [lat, lng];
+
+            var url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=ja"
+                    + "&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lng);
+
+            fetch(url, { headers: { "Accept": "application/json" } })
+                .then(function(res) { return res.ok ? res.json() : null; })
+                .then(function(data) {
+                    geocodePending = false;
+                    var a = data && data.address;
+                    if (!a) return;
+                    var pref = a.province || a.state || a.region || "";
+                    var muni = a.city || a.town || a.city_district || a.county
+                             || a.municipality || a.village || a.suburb || a.ward || "";
+                    var label = ("" + pref + muni).trim();
+                    if (label) {
+                        geocodedCity = label;
+                        var el = document.getElementById("ui-city-name");
+                        if (el) el.innerText = label;
+                    }
+                })
+                .catch(function() { geocodePending = false; });
+        }
+
+        // ベクトル投影（点を線分に投影）
         function projectOnSegment(pLat, pLng, lat1, lng1, lat2, lng2) {
             var x0 = pLng, y0 = pLat;
             var x1 = lng1, y1 = lat1;
@@ -911,13 +955,17 @@
                 if (uiNextId) uiNextId.innerText = nextStation.id;
             }
             
-            // 市町村名同期（停車中はその駅、走行中は prev/next のうち近い方の駅の市区を表示）
+            // 市町村名同期：実測のリバースジオコーディングを優先。未取得/離れている場合は駅ベースの近似でフォールバック
             var uiCity = document.getElementById("ui-city-name");
             if (uiCity) {
                 var cityStation = stoppedAtStation
                     ? stoppedAtStation
                     : ((Math.abs(km - prevStation.km) <= Math.abs(nextStation.km - km)) ? prevStation : nextStation);
-                uiCity.innerText = cityStation.city;
+                var cOk = coords && isFinite(coords[0]) && isFinite(coords[1]);
+                var useGeo = geocodedCity && geocodeLatLng && cOk
+                    && getDistance(coords[0], coords[1], geocodeLatLng[0], geocodeLatLng[1]) < 1500;
+                uiCity.innerText = useGeo ? geocodedCity : cityStation.city;
+                if (cOk) updateCityFromCoords(coords[0], coords[1]);
             }
 
             // 速度計更新
@@ -945,13 +993,15 @@
                 // 💡 地図の回転・再センタリングは「手動操作していないとき」だけ行う。
                 //    回転は #map コンテナ自体にかけるので、ドラッグ/ズーム中も Leaflet の translate と衝突しない
                 if (!isMapUserInteracting) {
-                    var mapEl = document.getElementById('map');
-                    if (mapEl) {
-                        mapEl.style.transform = `rotate(${-useBearing}deg)`;
+                    // MAP_HEADING_UP=false のときは常に北が上（回転0）。true で進行方向を上に回す
+                    var rotDeg = MAP_HEADING_UP ? -useBearing : 0;
+                    var rotator = document.getElementById('map-rotator');
+                    if (rotator) {
+                        rotator.style.transform = `rotate(${rotDeg}deg)`;
                     }
                     var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
                     markerIcons.forEach(function(icon) {
-                        icon.style.transform = `rotate(${useBearing}deg)`;
+                        icon.style.transform = `rotate(${-rotDeg}deg)`;
                     });
                     map.setView(coords, map.getZoom(), { animate: false });
                 }
@@ -1191,13 +1241,14 @@
             var b = isFinite(lastBearing) ? lastBearing : (state.bearing || 0);
             map.setView([state.lat, state.lng], 14, { animate: false });
 
-            var mapEl = document.getElementById('map');
-            if (mapEl) {
-                mapEl.style.transform = `rotate(${-b}deg)`;
+            var rotDeg = MAP_HEADING_UP ? -b : 0;
+            var rotator = document.getElementById('map-rotator');
+            if (rotator) {
+                rotator.style.transform = `rotate(${rotDeg}deg)`;
             }
             var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
             markerIcons.forEach(function(icon) {
-                icon.style.transform = `rotate(${b}deg)`;
+                icon.style.transform = `rotate(${-rotDeg}deg)`;
             });
         }
 
