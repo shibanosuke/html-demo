@@ -64,9 +64,10 @@
             z-index: 1000;
         }
 
-        /* 進行方向を上にするためのLeafletコンテナ回転のベーススタイル */
-        .rotated-map .leaflet-map-pane {
-            transform-origin: center;
+        /* 進行方向を上にするための回転は #map コンテナ自体にかける（下記）。
+           Leaflet 内部の .leaflet-map-pane には回転をかけない＝ドラッグ/ズーム時の translate と衝突しない */
+        #map.rotated-map {
+            transform-origin: center center;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
@@ -910,9 +911,14 @@
                 if (uiNextId) uiNextId.innerText = nextStation.id;
             }
             
-            // 市町村名同期
+            // 市町村名同期（停車中はその駅、走行中は prev/next のうち近い方の駅の市区を表示）
             var uiCity = document.getElementById("ui-city-name");
-            if (uiCity) uiCity.innerText = prevStation.city;
+            if (uiCity) {
+                var cityStation = stoppedAtStation
+                    ? stoppedAtStation
+                    : ((Math.abs(km - prevStation.km) <= Math.abs(nextStation.km - km)) ? prevStation : nextStation);
+                uiCity.innerText = cityStation.city;
+            }
 
             // 速度計更新
             var displaySpeed = speed !== null ? Math.round(speed) : (isDemoPlaying ? Math.floor(75 + Math.sin(km) * 12) : 0);
@@ -922,11 +928,14 @@
             // 地図マーカー＆方位角の同期
             // 不正座標(NaN等)が来た場合は地図操作をスキップして破綻を防ぐ
             var coordsOk = coords && isFinite(coords[0]) && isFinite(coords[1]);
-            var rawBearing = isFinite(bearing) ? bearing : lastBearing;
-            // 💡 停車中(GPS低速)は方位がブレて地図がぐるぐる回るため、移動中のみ方位を更新し据え置く
-            //    デモモードは常に「移動中」とみなす
+
+            // 💡 方位の平滑化：停車/低速ではGPSノイズで最近接セグメントが入れ替わり方位が乱高下するため、
+            //    移動中のみ「最短角の指数平滑」で少しずつ追従させる（デモは常に移動中扱い）
             var movingEnough = (currentMode === "demo") || (speed !== null && speed >= MOVING_SPEED_MIN);
-            if (movingEnough) lastBearing = rawBearing;
+            if (movingEnough && isFinite(bearing)) {
+                var d = ((bearing - lastBearing + 540) % 360) - 180; // -180..180 の最短差
+                lastBearing = (lastBearing + d * 0.25 + 360) % 360;
+            }
             var useBearing = isFinite(lastBearing) ? lastBearing : 0;
 
             if (map && trainMarker && coordsOk) {
@@ -934,11 +943,11 @@
                 trainMarker.setLatLng(coords);
 
                 // 💡 地図の回転・再センタリングは「手動操作していないとき」だけ行う。
-                //    ドラッグ/ズーム中に rotate を上書きすると Leaflet の translate と衝突して地図が吹っ飛ぶため
+                //    回転は #map コンテナ自体にかけるので、ドラッグ/ズーム中も Leaflet の translate と衝突しない
                 if (!isMapUserInteracting) {
-                    var mapPane = document.querySelector('.rotated-map .leaflet-map-pane');
-                    if (mapPane) {
-                        mapPane.style.transform = `rotate(${-useBearing}deg)`;
+                    var mapEl = document.getElementById('map');
+                    if (mapEl) {
+                        mapEl.style.transform = `rotate(${-useBearing}deg)`;
                     }
                     var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
                     markerIcons.forEach(function(icon) {
@@ -1182,9 +1191,9 @@
             var b = isFinite(lastBearing) ? lastBearing : (state.bearing || 0);
             map.setView([state.lat, state.lng], 14, { animate: false });
 
-            var mapPane = document.querySelector('.rotated-map .leaflet-map-pane');
-            if (mapPane) {
-                mapPane.style.transform = `rotate(${-b}deg)`;
+            var mapEl = document.getElementById('map');
+            if (mapEl) {
+                mapEl.style.transform = `rotate(${-b}deg)`;
             }
             var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
             markerIcons.forEach(function(icon) {
