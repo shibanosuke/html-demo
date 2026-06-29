@@ -605,6 +605,10 @@
         var isDemoPlaying = false;
         var watchId = null;
         var isMapUserInteracting = false; // ユーザーが地図を手動操作しているフラグ
+        var GPS_OFFLINE_THRESHOLD_M = 2000; // この距離(m)以上 線路から離れたら「沿線外」とみなし地図を飛ばさない
+        var gpsOfflineNotified = false;     // 沿線外トーストの多重表示防止
+        var lastBearing = 180;              // 直近の進行方位（停車中の方位ブレ防止に据え置き）
+        var MOVING_SPEED_MIN = 3;           // km/h 未満は静止扱い（GPS時のみ方位を更新しない）
 
         // トースト通知システム
         function showToast(message, type = "info") {
@@ -915,22 +919,31 @@
             var uiSpd = document.getElementById("ui-speed");
             if (uiSpd) uiSpd.innerText = displaySpeed;
 
-            // 地図マーカー＆方位角の同期（手動操作をしていない場合のみ、地図中心を自動追従）
-            if (map && trainMarker) {
+            // 地図マーカー＆方位角の同期
+            // 不正座標(NaN等)が来た場合は地図操作をスキップして破綻を防ぐ
+            var coordsOk = coords && isFinite(coords[0]) && isFinite(coords[1]);
+            var rawBearing = isFinite(bearing) ? bearing : lastBearing;
+            // 💡 停車中(GPS低速)は方位がブレて地図がぐるぐる回るため、移動中のみ方位を更新し据え置く
+            //    デモモードは常に「移動中」とみなす
+            var movingEnough = (currentMode === "demo") || (speed !== null && speed >= MOVING_SPEED_MIN);
+            if (movingEnough) lastBearing = rawBearing;
+            var useBearing = isFinite(lastBearing) ? lastBearing : 0;
+
+            if (map && trainMarker && coordsOk) {
+                // 現在地マーカーの位置は常に更新（ユーザーが地図を見ている間も追従）
                 trainMarker.setLatLng(coords);
-                
-                var mapPane = document.querySelector('.rotated-map .leaflet-map-pane');
-                if (mapPane) {
-                    mapPane.style.transform = `rotate(${-bearing}deg)`;
-                }
 
-                var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
-                markerIcons.forEach(function(icon) {
-                    icon.style.transform = `rotate(${bearing}deg)`;
-                });
-
-                // 自動追従が有効な場合のみsetViewを実行
+                // 💡 地図の回転・再センタリングは「手動操作していないとき」だけ行う。
+                //    ドラッグ/ズーム中に rotate を上書きすると Leaflet の translate と衝突して地図が吹っ飛ぶため
                 if (!isMapUserInteracting) {
+                    var mapPane = document.querySelector('.rotated-map .leaflet-map-pane');
+                    if (mapPane) {
+                        mapPane.style.transform = `rotate(${-useBearing}deg)`;
+                    }
+                    var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
+                    markerIcons.forEach(function(icon) {
+                        icon.style.transform = `rotate(${useBearing}deg)`;
+                    });
                     map.setView(coords, map.getZoom(), { animate: false });
                 }
             }
@@ -1164,9 +1177,19 @@
             
             triggerUserInteraction(false);
 
-            // 最新のKMから座標と角度を取得してセット
+            // 最新のKMから座標を取得して再センタリング＋回転を即時復帰
             var state = getCoordsByKm(currentKm);
-            map.setView([state.lat, state.lng], 14, { animate: true });
+            var b = isFinite(lastBearing) ? lastBearing : (state.bearing || 0);
+            map.setView([state.lat, state.lng], 14, { animate: false });
+
+            var mapPane = document.querySelector('.rotated-map .leaflet-map-pane');
+            if (mapPane) {
+                mapPane.style.transform = `rotate(${-b}deg)`;
+            }
+            var markerIcons = document.querySelectorAll('.rotated-map .leaflet-marker-icon .fix-rotate');
+            markerIcons.forEach(function(icon) {
+                icon.style.transform = `rotate(${b}deg)`;
+            });
         }
 
         // モード変更
@@ -1201,6 +1224,11 @@
                 stopGPSWatch();
                 onDemoSliderChange(document.getElementById("demo-slider").value);
             }
+
+            // モード切替でデモ操作バーの表示が変わり地図枠の寸法がずれることがあるため、確実に再計測
+            if (map) {
+                setTimeout(function() { map.invalidateSize(); }, 60);
+            }
         }
 
         // GPS監視
@@ -1220,9 +1248,28 @@
                     var rawSpeed = position.coords.speed;
                     var speedKmh = rawSpeed ? rawSpeed * 3.6 : null;
 
+                    // 緯度経度が不正なら無視（NaN等による地図破綻を防止）
+                    if (!isFinite(lat) || !isFinite(lng)) return;
+
                     var matched = mapMatchToTrack(lat, lng);
-                    
+                    if (!matched || !isFinite(matched.lat) || !isFinite(matched.lng) || !isFinite(matched.km)) return;
+
                     var gpsBadge = document.getElementById("ui-gps-badge");
+
+                    // 💡 線路から大きく離れている＝沿線外。最近接点へ瞬間移動して地図が吹っ飛ぶのを防ぐ
+                    if (matched.distance > GPS_OFFLINE_THRESHOLD_M) {
+                        if (gpsBadge) {
+                            gpsBadge.innerText = "沿線外";
+                            gpsBadge.className = "text-[8px] font-bold text-slate-400 bg-slate-500/10 border border-slate-500/20 px-1 rounded w-full mt-0.5 text-center leading-none";
+                        }
+                        if (!gpsOfflineNotified) {
+                            gpsOfflineNotified = true;
+                            showToast("現在地が東海道線の沿線から離れています。沿線で使うと正しく表示されます。", "info");
+                        }
+                        return; // 地図・現在地は更新しない（その場で待機）
+                    }
+                    gpsOfflineNotified = false;
+
                     if (gpsBadge) {
                         gpsBadge.innerText = "GPS有効";
                         gpsBadge.className = "text-[8px] font-bold text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 px-1 rounded w-full mt-0.5 text-center leading-none";
@@ -1323,6 +1370,16 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                 maxZoom: 19
             }).addTo(map);
+
+            // 💡 画面リサイズ（端末回転・URLバー開閉等）で地図枠の寸法がずれると黒画面化するため、その都度再計測
+            window.addEventListener('resize', function() { if (map) map.invalidateSize(); });
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() { if (map) map.invalidateSize(); }, 200);
+            });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', function() { if (map) map.invalidateSize(); });
+            }
+            setTimeout(function() { if (map) map.invalidateSize(); }, 300);
 
             // 超精密ポリライン全線の描画
             var trackCoords = trackPoints.map(function(p) { return [p.lat, p.lng]; });
