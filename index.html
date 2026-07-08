@@ -133,7 +133,7 @@
                 <div class="w-[16px] h-[16px] bg-white border-[2px] border-orange-500 rounded flex items-center justify-center shadow-sm shrink-0">
                     <span class="text-appDark font-black text-[8px] font-roboto tracking-tighter leading-none">JT</span>
                 </div>
-                <h1 class="text-[11px] font-black tracking-wide text-white">東海道線（JR東日本）</h1>
+                <h1 id="ui-line-title" class="text-[11px] font-black tracking-wide text-white">路線名</h1>
             </div>
             
             <!-- GPS/デモスイッチ -->
@@ -155,12 +155,7 @@
             <div id="ui-progress-dot" class="absolute w-2.5 h-2.5 bg-white rounded-full top-1/2 -translate-y-1/2 shadow-[0_0_6px_#fff]" style="left: 0%;"></div>
             <span id="ui-distance-label" class="absolute right-0 -top-4 text-[9px] text-blue-400 font-mono font-bold">0.0km</span>
             <div id="km-major-labels" class="absolute w-full top-1.5 px-0.5 text-[8px] text-slate-500 font-medium whitespace-nowrap" style="height: 10px;">
-                <span id="km-major-0" data-km="0" class="font-bold whitespace-nowrap">東京</span>
-                <span id="km-major-1" data-km="28.8" class="whitespace-nowrap">横浜</span>
-                <span id="km-major-2" data-km="51.1" class="whitespace-nowrap">藤沢</span>
-                <span id="km-major-3" data-km="63.5" class="whitespace-nowrap">平塚</span>
-                <span id="km-major-4" data-km="83.8" class="whitespace-nowrap">小田原</span>
-                <span id="km-major-5" data-km="104.6" class="whitespace-nowrap">熱海</span>
+                <!-- 主要駅ラベルは路線データ(major: true の駅)から自動生成 -->
             </div>
         </div>
 
@@ -196,7 +191,7 @@
                 </div>
                 <!-- 右：駅紹介カード（2行で省略記号「…」まで表示。「詳細」はシンプルな文字のみ） -->
                 <div id="station-intro-compact" class="flex-grow relative">
-                    <div class="bg-slate-900 border border-blue-500/35 rounded-lg overflow-hidden relative h-[38px] flex items-center">
+                    <div class="bg-appCard border border-appBorder rounded-xl overflow-hidden relative h-[38px] flex items-center shadow-md shadow-slate-950/40">
                         <p id="ui-station-intro" class="text-[10px] text-slate-100 leading-snug font-medium px-2.5 pr-8 clamp-2">日本の起点となる赤レンガ造りの歴史的ターミナル駅。</p>
                         <button id="station-intro-toggle" onclick="toggleStationIntro()" class="hidden absolute bottom-1 right-1.5 text-[8px] font-bold text-blue-300 flex items-center gap-0.5">
                             <i class="fa-solid fa-caret-down" id="station-intro-caret"></i><span id="station-intro-label">詳細</span>
@@ -243,7 +238,7 @@
                 </button>
                 <span class="text-[9px] text-slate-400 font-bold" id="demo-status-label">デモ 6x</span>
             </div>
-            <input type="range" id="demo-slider" min="0" max="104.6" step="0.1" value="0" oninput="onDemoSliderChange(this.value)" class="flex-grow accent-railBlue bg-slate-800 rounded-lg appearance-none h-1 cursor-pointer">
+            <input type="range" id="demo-slider" min="0" max="100" step="0.1" value="0" oninput="onDemoSliderChange(this.value)" class="flex-grow accent-railBlue bg-slate-800 rounded-lg appearance-none h-1 cursor-pointer">
             <span class="text-[9px] text-blue-400 font-mono font-bold shrink-0" id="demo-km-label">0.0km</span>
         </div>
 
@@ -294,7 +289,7 @@
                 <div class="relative py-1" id="station-timeline">
                     
                     <!-- 縦線ライン -->
-                    <div class="absolute left-[11.25px] top-0 bottom-0 w-[1.5px] bg-slate-400 z-0"></div>
+                    <div class="absolute left-[12px] -translate-x-1/2 top-0 bottom-0 w-[1.5px] bg-slate-400 z-0"></div>
 
                     <!-- 21駅リストコンテナ -->
                     <div id="timeline-stations" class="space-y-1.5"></div>
@@ -348,15 +343,17 @@
         var trainMarker;
         var spotMarkers = [];
         var stationMarkers = [];
-        // 上部キロ程メーターの主要駅ラベル（id・km）。現在地に最も近いものだけ強調表示する
-        var KM_MAJOR_LABELS = [
-            { id: "km-major-0", km: 0 },
-            { id: "km-major-1", km: 28.8 },
-            { id: "km-major-2", km: 51.1 },
-            { id: "km-major-3", km: 63.5 },
-            { id: "km-major-4", km: 83.8 },
-            { id: "km-major-5", km: 104.6 }
-        ];
+        // 上部キロ程メーターの主要駅ラベル。路線データの major: true の駅から自動導出する
+        // （majorが1駅も無い路線では起点・終点のみ表示）
+        var KM_MAJOR_LABELS = (function() {
+            var majors = stations.filter(function(s) { return s.major; });
+            if (majors.length === 0 && stations.length >= 2) {
+                majors = [stations[0], stations[stations.length - 1]];
+            }
+            return majors.map(function(s, i) {
+                return { id: "km-major-" + i, km: s.km, name: s.name };
+            });
+        })();
         var MAP_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
         var currentMode = "demo";
         var currentKm = 0.0;
@@ -366,7 +363,7 @@
         var isMapUserInteracting = false; // ユーザーが地図を手動操作しているフラグ
         var GPS_OFFLINE_THRESHOLD_M = 2000; // この距離(m)以上 線路から離れたら「沿線外」とみなし地図を飛ばさない
         var gpsOfflineNotified = false;     // 沿線外トーストの多重表示防止
-        var lastBearing = 180;              // 直近の進行方位（停車中の方位ブレ防止に据え置き）
+        var lastBearing = 180;              // 直近の進行方位（停車中の方位ブレ防止に据え置き。初期化時に路線の実方位で上書き）
         var MOVING_SPEED_MIN = 3;           // km/h 未満は静止扱い（GPS時のみ方位を更新しない）
         // 💡 地図を「進行方向＝上」に回すか。false なら常に北が上（通常の地図表示）。
         var MAP_HEADING_UP = false;
@@ -570,7 +567,7 @@
                         <div id="section-${station.id}-${nextStation.id}" class="section-row relative hidden items-center h-4 my-0.5 transition-all duration-300">
                             <!-- 縦線軸（left-[12px]）と同調。translate-x-1/2 は current-location-pulse 側のキーフレームが担うため外す -->
                             <div class="absolute w-4 h-4 flex items-center justify-center z-10 current-location-pulse">
-                                <svg width="14" height="14" viewBox="0 0 24 24" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa" stroke="#000000" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
                             </div>
                         </div>
                     `;
@@ -663,28 +660,32 @@
             var pt1 = trackPoints[segmentIndex];
             var pt2 = trackPoints[segmentIndex + 1];
             var interpolatedKm = pt1.km + (pt2.km - pt1.km) * segmentOffset;
-            
-            var dLng = (pt2.lng - pt1.lng) * Math.PI / 180;
-            var lat1Rad = pt1.lat * Math.PI / 180;
-            var lat2Rad = pt2.lat * Math.PI / 180;
-            var y = Math.sin(dLng) * Math.cos(lat2Rad);
-            var x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLng);
-            var bearing = Math.atan2(y, x) * 180 / Math.PI;
 
             return {
                 lat: matchedPt.lat,
                 lng: matchedPt.lng,
                 km: interpolatedKm,
-                bearing: (bearing + 360) % 360,
+                bearing: bearingBetween(pt1, pt2),
                 distance: minDistance
             };
         }
 
+        // 💡 2点間の方位角(0-360°)。地図回転・現在地矢印の向き計算に共通で使う
+        function bearingBetween(pt1, pt2) {
+            var dLng = (pt2.lng - pt1.lng) * Math.PI / 180;
+            var lat1Rad = pt1.lat * Math.PI / 180;
+            var lat2Rad = pt2.lat * Math.PI / 180;
+            var y = Math.sin(dLng) * Math.cos(lat2Rad);
+            var x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLng);
+            return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+        }
+
         // デモ用キロ程補間
         function getCoordsByKm(km) {
-            if (km <= 0) return { lat: trackPoints[0].lat, lng: trackPoints[0].lng, bearing: 180 };
             var lastIdx = trackPoints.length - 1;
-            if (km >= trackPoints[lastIdx].km) return { lat: trackPoints[lastIdx].lat, lng: trackPoints[lastIdx].lng, bearing: 180 };
+            // 端点の方位も実際の線形（最初/最後の区間）から求める（路線の向きに依存しない）
+            if (km <= 0) return { lat: trackPoints[0].lat, lng: trackPoints[0].lng, bearing: bearingBetween(trackPoints[0], trackPoints[1] || trackPoints[0]) };
+            if (km >= trackPoints[lastIdx].km) return { lat: trackPoints[lastIdx].lat, lng: trackPoints[lastIdx].lng, bearing: bearingBetween(trackPoints[lastIdx - 1] || trackPoints[lastIdx], trackPoints[lastIdx]) };
 
             for (var i = 0; i < lastIdx; i++) {
                 var pt1 = trackPoints[i];
@@ -693,18 +694,10 @@
                     var ratio = (km - pt1.km) / (pt2.km - pt1.km);
                     var lat = pt1.lat + (pt2.lat - pt1.lat) * ratio;
                     var lng = pt1.lng + (pt2.lng - pt1.lng) * ratio;
-
-                    var dLng = (pt2.lng - pt1.lng) * Math.PI / 180;
-                    var lat1Rad = pt1.lat * Math.PI / 180;
-                    var lat2Rad = pt2.lat * Math.PI / 180;
-                    var y = Math.sin(dLng) * Math.cos(lat2Rad);
-                    var x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLng);
-                    var bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-
-                    return { lat: lat, lng: lng, bearing: bearing };
+                    return { lat: lat, lng: lng, bearing: bearingBetween(pt1, pt2) };
                 }
             }
-            return { lat: trackPoints[0].lat, lng: trackPoints[0].lng, bearing: 180 };
+            return { lat: trackPoints[0].lat, lng: trackPoints[0].lng, bearing: bearingBetween(trackPoints[0], trackPoints[1] || trackPoints[0]) };
         }
 
         // 💡 UI・位置・地図の同期
@@ -767,19 +760,25 @@
         }
 
         // 進捗バー・距離ラベル
-        // 💡 主要駅ラベルを、見た目の均等配置ではなく「実際のキロ程に比例した位置」に配置する。
+        // 💡 主要駅ラベルを路線データから生成し、「実際のキロ程に比例した位置」に配置する。
         //    これにより、駅到着時にスライダー(現在地ドット)の位置とラベルの文字位置がズレない。
-        function positionKmMajorLabels() {
-            if (!TOTAL_KM) return;
+        function renderKmMajorLabels() {
+            var container = document.getElementById("km-major-labels");
+            if (!container || !TOTAL_KM) return;
+            var html = "";
             for (var i = 0; i < KM_MAJOR_LABELS.length; i++) {
-                var lbl = document.getElementById(KM_MAJOR_LABELS[i].id);
+                html += `<span id="${KM_MAJOR_LABELS[i].id}" class="whitespace-nowrap">${KM_MAJOR_LABELS[i].name}</span>`;
+            }
+            container.innerHTML = html;
+            for (var j = 0; j < KM_MAJOR_LABELS.length; j++) {
+                var lbl = document.getElementById(KM_MAJOR_LABELS[j].id);
                 if (!lbl) continue;
-                var pct = (KM_MAJOR_LABELS[i].km / TOTAL_KM) * 100;
+                var pct = (KM_MAJOR_LABELS[j].km / TOTAL_KM) * 100;
                 lbl.style.position = "absolute";
                 lbl.style.left = pct + "%";
-                // 端(東京=左端／熱海=右端)は画面外に飛び出さないよう、はみ出す方向にだけずらす
-                if (i === 0) lbl.style.transform = "translateX(0)";
-                else if (i === KM_MAJOR_LABELS.length - 1) lbl.style.transform = "translateX(-100%)";
+                // 端(起点=左端／終点=右端)は画面外に飛び出さないよう、はみ出す方向にだけずらす
+                if (j === 0) lbl.style.transform = "translateX(0)";
+                else if (j === KM_MAJOR_LABELS.length - 1) lbl.style.transform = "translateX(-100%)";
                 else lbl.style.transform = "translateX(-50%)";
             }
         }
@@ -968,7 +967,7 @@
                     var dot = row.querySelector(".absolute.left-\\[12px\\]");
                     if (dot) {
                         dot.className = "absolute left-[12px] -translate-x-1/2 w-4 h-4 flex items-center justify-center z-10";
-                        dot.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa"/></svg>`;
+                        dot.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa" stroke="#000000" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>`;
                     }
                 }
             } else {
@@ -1199,7 +1198,7 @@
                         }
                         if (!gpsOfflineNotified) {
                             gpsOfflineNotified = true;
-                            showToast("現在地が東海道線の沿線から離れています。沿線で使うと正しく表示されます。", "info");
+                            showToast("現在地が" + (currentLine ? currentLine.name : "路線") + "の沿線から離れています。沿線で使うと正しく表示されます。", "info");
                         }
                         return;
                     }
@@ -1292,7 +1291,12 @@
         // 初期ロード
         document.addEventListener("DOMContentLoaded", function() {
             cacheElements();   // 最初に要素参照をまとめて取得
-            positionKmMajorLabels();
+            // 進行方位の初期値を路線の実際の始発方向に合わせる（南向き前提の180固定をやめる）
+            if (trackPoints.length >= 2) lastBearing = bearingBetween(trackPoints[0], trackPoints[1]);
+            // 路線名見出し・主要駅ラベルを路線データから設定
+            var titleEl = document.getElementById("ui-line-title");
+            if (titleEl && currentLine) titleEl.innerText = currentLine.name + (currentLine.operator ? "（" + currentLine.operator + "）" : "");
+            renderKmMajorLabels();
             initTimeline();
 
             // 地図ビュー
