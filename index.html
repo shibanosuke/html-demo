@@ -507,6 +507,9 @@
             spotMarkers = [];
             SPOTS.forEach(function(s) {
                 if (s.show === false) return;
+                // 💡 plotOnMap:false のスポットは地図ピンを出さない（例：区間全体で"並走"するような、
+                //    1点に定めにくいスポット。カード・ハイライトへの表示はそのまま行う）
+                if (s.plotOnMap === false) return;
                 var cat = CATEGORIES[s.cat] || { color: "#94a3b8" };
                 var isOther = (s.cat === "その他");
                 // 💡 地図上はすべてのカテゴリでアイコンを出さず、小さい塗りつぶし丸のみで統一（その他は白、他はカテゴリ色）
@@ -567,7 +570,7 @@
                         <div id="section-${station.id}-${nextStation.id}" class="section-row relative hidden items-center h-4 my-0.5 transition-all duration-300">
                             <!-- 縦線軸（left-[12px]）と同調。translate-x-1/2 は current-location-pulse 側のキーフレームが担うため外す -->
                             <div class="absolute w-4 h-4 flex items-center justify-center z-10 current-location-pulse">
-                                <svg width="14" height="14" viewBox="0 0 24 24" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa" stroke="#000000" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
+                                <svg width="14" height="14" viewBox="-2 -2 28 28" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa" stroke="#000000" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/></svg>
                             </div>
                         </div>
                     `;
@@ -967,7 +970,7 @@
                     var dot = row.querySelector(".absolute.left-\\[12px\\]");
                     if (dot) {
                         dot.className = "absolute left-[12px] -translate-x-1/2 w-4 h-4 flex items-center justify-center z-10";
-                        dot.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa" stroke="#000000" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>`;
+                        dot.innerHTML = `<svg width="14" height="14" viewBox="-2 -2 28 28" style="display:block"><path d="M12 22 L4 5 L12 12 L20 5 Z" fill="#60a5fa" stroke="#000000" stroke-width="3" stroke-linejoin="round" paint-order="stroke"/></svg>`;
                     }
                 }
             } else {
